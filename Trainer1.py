@@ -76,6 +76,8 @@ from scipy import spatial
 # TODO< compute similarity to prototypes with cosine similarity >
 
 # compute similarity to all prototypes
+bestSim, bestIdx = 10000.0, -1
+iIdx = 0
 for iPrototype in stimulus:
     out, hiddenA = model(stimulusTest0)
     out, hiddenB = model(iPrototype)
@@ -83,7 +85,10 @@ for iPrototype in stimulus:
 
     #print(hiddenA) # DEBUG
     cosineDist = spatial.distance.cosine(hiddenA.detach().numpy(), hiddenB.detach().numpy())
-
+    if cosineDist < bestSim:
+        bestSim, bestIdx = cosineDist, iIdx
 
     print(cosineDist)
+    iIdx+=1
 
+print((bestSim, bestIdx))
