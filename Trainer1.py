@@ -26,7 +26,7 @@ class C(object):
     def __init__(self):
         self.prototypes = []
         self.prototypeIdCntr = 0 # counter to keep track of prototype ids
-
+        self.nPrototypes = 50 # number of prototypes
 
         self.model = AE(32*32)
 
@@ -45,6 +45,10 @@ class C(object):
         if store:
             self.prototypes.append(Prototype(arr, self.prototypeIdCntr))
             self.prototypeIdCntr+=1
+
+            # keep under AIKR
+            sorted(self.prototypes, key=lambda iProto: iProto.rating)
+            self.prototypes = self.prototypes[:self.nPrototypes]
         
         #############
         # classify
@@ -93,7 +97,7 @@ class C(object):
             # perform parameter update based on current gradients
             self._cachedOptimizer.step()
         
-        print("loss="+str(lossTensor.item())) # print loss
+        #print("loss="+str(lossTensor.item())) # print loss
 
 
 c = C()
@@ -127,12 +131,7 @@ sim, id = c.perceive(stimulusTest0)
 print((sim, id))
 
 
+# TODO LOW< add edge detection with multiple channels >
 
-
-# TODO< add edge detection with multiple channels >
-
-
-
-# TODO< put prototypes under AIKR >
 
 # TODO< decide when to add new prototype based on similarity >
