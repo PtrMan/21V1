@@ -1,3 +1,7 @@
+# run with
+#   python Trainer1.py 
+#   (under conda environment)
+
 from PIL import Image
 import numpy as np
 import torch
@@ -27,6 +31,7 @@ class C(object):
         self.prototypes = []
         self.prototypeIdCntr = 0 # counter to keep track of prototype ids
         self.nPrototypes = 50 # number of prototypes
+        self.distThreshold = 1.0 # threshold to create new prototype
 
         self.model = AE(32*32)
 
@@ -38,9 +43,22 @@ class C(object):
 
     
     def perceive(self, arr):
+        def calcDist(arr):
+            bestDist, bestIdx = float('inf'), -1
+            
+            iIdx = 0
+            for iProto in self.prototypes:
+                dist = spatial.distance.euclidean(iProto.arr.detach().numpy(), arr.detach().numpy())
+                if dist < bestDist:
+                    bestDist, bestIdx = dist, iIdx
+                iIdx+=1
+            
+            return bestDist, bestIdx
 
-        # TODO< decide if we want to store new prototype based on similarity >
-        store = True # do we want to store prototype?
+        # decide if we want to store new prototype based on similarity
+        dist, _ = calcDist(arr)
+        print("dist="+str(dist))
+        store = dist > self.distThreshold # do we want to store prototype?
 
         if store:
             self.prototypes.append(Prototype(arr, self.prototypeIdCntr))
@@ -54,7 +72,7 @@ class C(object):
         # classify
 
         # compute similarity to all prototypes
-        bestSim, bestIdx = 10000.0, -1
+        bestSim, bestIdx = float('inf'), -1
         iIdx = 0
         for iPrototype in self.prototypes:
             out, hiddenA = self.model(arr)
@@ -133,5 +151,5 @@ print((sim, id))
 
 # TODO LOW< add edge detection with multiple channels >
 
-
-# TODO< decide when to add new prototype based on similarity >
+# TODO< decay importance >
+# TODO< add to importance when it was used >
