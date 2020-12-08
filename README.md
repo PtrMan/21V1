@@ -2,6 +2,12 @@
 * python             for ML
 * python:pytorch     for learning contemporary ML models
 * python:pillow      for reading images
+* python:scipy       for UL classifier
+* python:opencv      for low level image manipulation
+* python:pygame      for visualization
+
+* povray             for rendering synthetic test and training scenes
+
 ## install
 conda is recommended for managing the python environment
     conda create --name ml
