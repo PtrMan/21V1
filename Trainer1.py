@@ -118,38 +118,39 @@ class C(object):
         #print("loss="+str(lossTensor.item())) # print loss
 
 
-c = C()
+if __name__ == "__main__":
+    c = C()
 
-if True:
-    input0Arr = loadImageAsGrayscale("Scene0.png")
-    input0 = torch.FloatTensor(input0Arr)
-    sim, id = c.perceive(input0)
+    if True:
+        input0Arr = loadImageAsGrayscale("Scene0.png")
+        input0 = torch.FloatTensor(input0Arr)
+        sim, id = c.perceive(input0)
 
-# give time to learn
-for it in range(50):
-    c.trainRound()
+    # give time to learn
+    for it in range(50):
+        c.trainRound()
 
-if True:
-    input0Arr = loadImageAsGrayscale("Scene1.png")
-    input0 = torch.FloatTensor(input0Arr)
-    sim, id = c.perceive(input0)
+    if True:
+        input0Arr = loadImageAsGrayscale("Scene1.png")
+        input0 = torch.FloatTensor(input0Arr)
+        sim, id = c.perceive(input0)
 
-# give time to learn
-for it in range(50):
-    c.trainRound()
-
-
-
+    # give time to learn
+    for it in range(50):
+        c.trainRound()
 
 
-# load stimulus scene
-input0Arr = loadImageAsGrayscale("SceneStimulus0.png")
-stimulusTest0 = torch.FloatTensor(input0Arr)
-sim, id = c.perceive(stimulusTest0)
-print((sim, id))
 
 
-# TODO LOW< add edge detection with multiple channels >
 
-# TODO< decay importance >
-# TODO< add to importance when it was used >
+    # load stimulus scene
+    input0Arr = loadImageAsGrayscale("SceneStimulus0.png")
+    stimulusTest0 = torch.FloatTensor(input0Arr)
+    sim, id = c.perceive(stimulusTest0)
+    print((sim, id))
+
+
+    # TODO LOW< add edge detection with multiple channels >
+
+    # TODO< decay importance >
+    # TODO< add to importance when it was used >

@@ -42,9 +42,12 @@ light_source { <2, 4, -3> color White}
 
 
 import cv2
+from Trainer1 import * # import UL classifier
 
 def main():
     import pygame
+
+    c = C() # UL classifier
 
     t = 0.0 # time
 
@@ -94,7 +97,6 @@ def main():
         img = cv2.imread("TEMPScene.png")
         imgGray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
         ret, imgBinary = cv2.threshold(imgGray,127,255,cv2.THRESH_BINARY)
-        del imgGray
         synMaskRect = cv2.boundingRect(imgBinary)
 
         # draw bounding lines
@@ -109,13 +111,22 @@ def main():
         w2, h2 = maxExtend, maxExtend
 
         # crop by BB
-        croppedImg = img[y2:y2+h2, x2:x2+w2] # idx with [y:y+h, x:x+w]
+        croppedImg = imgGray[y2:y2+h2, x2:x2+w2] # idx with [y:y+h, x:x+w]
 
-        # scale cropped image to 64x64
-        rescaledCroppedImg = cv2.resize(croppedImg, (64, 64))
+        # scale cropped image to 32x32
+        print(croppedImg.shape)
+        rescaledCroppedImg = cv2.resize(croppedImg, (32, 32))
+        print(rescaledCroppedImg.shape)
 
-        # TODO< feed image to UL-Classifier >
+        # feed image to UL-Classifier to classify
+        flattenArray = rescaledCroppedImg.flatten()
+        input0 = torch.FloatTensor(flattenArray)
+        sim, id = c.perceive(input0)
+        print("H CLASSIFIER "+str((sim, id)))
 
+        # give UL classifier compute to learn
+        for it in range(50):
+            c.trainRound()
 
         # Draws the surface object to the screen
         pygame.display.update()
