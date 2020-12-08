@@ -90,7 +90,6 @@ def main():
         # see https://www.pyimagesearch.com/2016/02/08/opencv-shape-detection/
         img = cv2.imread("TEMPScene.png")
         imgGray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-        del img
         ret, imgBinary = cv2.threshold(imgGray,127,255,cv2.THRESH_BINARY)
         del imgGray
         synMaskRect = cv2.boundingRect(imgBinary)
@@ -100,7 +99,14 @@ def main():
         pygame.draw.rect(gameDisplay, (255,0,0,127), (synMaskRect[0], synMaskRect[1]+synMaskRect[3], synMaskRect[2], 3), width=0, border_radius=0)
 
         # crop by BB
-        print("TODO - crop by BB")
+        x, y, w, h = synMaskRect
+        croppedImg = img[y:y+h, x:x+w] # idx with [y:y+h, x:x+w]
+
+        # TODO< rectify cropped image >
+
+        # TODO< scale cropped image to 64x64 >
+
+        # TODO< feed image to UL-Classifier >
 
 
         # Draws the surface object to the screen
