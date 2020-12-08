@@ -34,8 +34,11 @@ light_source { <2, 4, -3> color White}
     f.write(sceneContent)
     f.close()
 
-    import os
-    os.system("povray TEMPScene.pov"+" +W"+str(displaySize[0])+" +H"+str(displaySize[1]))
+    #import os
+    #os.system("povray TEMPScene.pov"+" +W"+str(displaySize[0])+" +H"+str(displaySize[1]))
+
+    import subprocess
+    subprocess.call(["povray", "TEMPScene.pov", "+W"+str(displaySize[0]), "+H"+str(displaySize[1])], stderr=subprocess.PIPE)
 
 
 import cv2
@@ -108,7 +111,8 @@ def main():
         # crop by BB
         croppedImg = img[y2:y2+h2, x2:x2+w2] # idx with [y:y+h, x:x+w]
 
-        # TODO< scale cropped image to 64x64 >
+        # scale cropped image to 64x64
+        rescaledCroppedImg = cv2.resize(croppedImg, (64, 64))
 
         # TODO< feed image to UL-Classifier >
 
