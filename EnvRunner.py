@@ -98,11 +98,15 @@ def main():
         pygame.draw.rect(gameDisplay, (255,0,0,127), (synMaskRect[0], synMaskRect[1], synMaskRect[2], 3), width=0, border_radius=0)
         pygame.draw.rect(gameDisplay, (255,0,0,127), (synMaskRect[0], synMaskRect[1]+synMaskRect[3], synMaskRect[2], 3), width=0, border_radius=0)
 
-        # crop by BB
+        # compute BB with biggest extend
         x, y, w, h = synMaskRect
-        croppedImg = img[y:y+h, x:x+w] # idx with [y:y+h, x:x+w]
+        cx, cy = x + int(w/2), y + int(h/2)
+        maxExtend = max(w, h)
+        x2, y2 = cx - int(maxExtend/2), cy - int(maxExtend/2)
+        w2, h2 = maxExtend, maxExtend
 
-        # TODO< rectify cropped image >
+        # crop by BB
+        croppedImg = img[y2:y2+h2, x2:x2+w2] # idx with [y:y+h, x:x+w]
 
         # TODO< scale cropped image to 64x64 >
 
