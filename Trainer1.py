@@ -31,7 +31,8 @@ class C(object):
         self.prototypes = []
         self.prototypeIdCntr = 0 # counter to keep track of prototype ids
         self.nPrototypes = 50 # number of prototypes
-        self.distThreshold = 1.0 # threshold to create new prototype
+        #self.distThreshold = 1.0 # threshold to create new prototype
+        self.hcosThreshold = 0.0032 #0.03 # theshold for hidden layer measured by cosine distance to create new prototype
 
         self.model = AE(32*32)
 
@@ -43,6 +44,7 @@ class C(object):
 
     
     def perceive(self, arr):
+        """
         def calcDist(arr):
             bestDist, bestIdx = float('inf'), -1
             
@@ -67,7 +69,8 @@ class C(object):
             # keep under AIKR
             sorted(self.prototypes, key=lambda iProto: iProto.rating)
             self.prototypes = self.prototypes[:self.nPrototypes]
-        
+        """
+
         #############
         # classify
 
@@ -86,11 +89,22 @@ class C(object):
 
             print(cosineDist)
             iIdx+=1
+        
+        if bestSim > self.hcosThreshold: # do we need to create new prototype?
+            self.prototypes.append(Prototype(arr, self.prototypeIdCntr))
+            resId = self.prototypeIdCntr# store result id
+            self.prototypeIdCntr+=1
 
-        # reward winner
-        self.prototypes[bestIdx].rating = 1.0
+            # keep under AIKR
+            sorted(self.prototypes, key=lambda iProto: iProto.rating)
+            self.prototypes = self.prototypes[:self.nPrototypes]
 
-        return (bestSim, self.prototypes[bestIdx].id)
+            return (0.0, resId)
+        else:
+            # reward winner
+            self.prototypes[bestIdx].rating = 1.0
+
+            return (bestSim, self.prototypes[bestIdx].id)
 
     # training round, should be relativly fast
     def trainRound(self):
