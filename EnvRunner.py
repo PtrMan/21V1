@@ -5,6 +5,8 @@ class Scene(object):
     def __init__(self):
         self.cameraPos = [0.0, 0.0, 0.0]
 
+        self.lightPos = [0.0, 0.0, 0.0]
+
 # generate povray scene, write it to file, render file
 # write png to local file
 def renderScene(scene, displaySize):
@@ -25,10 +27,12 @@ sphere {
   }
 }
 
-light_source { <2, 4, -3> color White}
+light_source { <LIGHTPOS> color White}
 """
     sceneContent = sceneTemplate[:]
     sceneContent = sceneContent.replace("CAMERAPOS", str(scene.cameraPos[0])+","+str(scene.cameraPos[1])+","+str(scene.cameraPos[2]))
+
+    sceneContent = sceneContent.replace("LIGHTPOS",  str(scene.lightPos[0])+","+str(scene.lightPos[1])+","+str(scene.lightPos[2]))
 
     f = open("TEMPScene.pov", 'w')
     f.write(sceneContent)
@@ -40,7 +44,7 @@ light_source { <2, 4, -3> color White}
     import subprocess
     subprocess.call(["povray", "TEMPScene.pov", "+W"+str(displaySize[0]), "+H"+str(displaySize[1])], stderr=subprocess.PIPE)
 
-
+import math
 import cv2
 from Trainer1 import * # import UL classifier
 
@@ -67,6 +71,9 @@ def main():
         t+=0.3 # advance time
 
         scene.cameraPos = [0.0+(t % 2.0), 2.0, -3.0]
+
+        # jiggle around light so that stimulus isn't exactly equal
+        scene.lightPos = [scene.cameraPos[0] + math.cos(t*50.0)*110.0, 2.0, -3.0]
         
         # iterate over the list of Event objects 
         for event in pygame.event.get():
@@ -96,7 +103,7 @@ def main():
         # see https://www.pyimagesearch.com/2016/02/08/opencv-shape-detection/
         img = cv2.imread("TEMPScene.png")
         imgGray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-        ret, imgBinary = cv2.threshold(imgGray,127,255,cv2.THRESH_BINARY)
+        ret, imgBinary = cv2.threshold(imgGray,12,255,cv2.THRESH_BINARY)
         synMaskRect = cv2.boundingRect(imgBinary)
 
         # draw bounding lines
