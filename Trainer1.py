@@ -87,6 +87,9 @@ class C(object):
             print(cosineDist)
             iIdx+=1
 
+        # reward winner
+        self.prototypes[bestIdx].rating = 1.0
+
         return (bestSim, self.prototypes[bestIdx].id)
 
     # training round, should be relativly fast
@@ -117,6 +120,10 @@ class C(object):
         
         #print("loss="+str(lossTensor.item())) # print loss
 
+    # decay all ratings so old unused tend to die off
+    def decay(self):
+        for iProto in self.prototypes:
+            iProto.rating *= 0.96
 
 if __name__ == "__main__":
     c = C()

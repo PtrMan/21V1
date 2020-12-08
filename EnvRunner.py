@@ -134,6 +134,8 @@ def main():
         # give UL classifier compute to learn
         for it in range(50):
             c.trainRound()
+        
+        c.decay()
 
         # Draws the surface object to the screen
         pygame.display.update()
