@@ -7,6 +7,9 @@ class Scene(object):
 
         self.lightPos = [0.0, 0.0, 0.0]
 
+        self.enBox = True
+        self.enSphere = True
+
 # generate povray scene, write it to file, render file
 # write png to local file
 def renderScene(scene, displaySize):
@@ -20,12 +23,7 @@ camera {
   look_at <0, 1, 2>
 }
 
-sphere {
-  <0, 1, 40>, 2
-  texture {
-    pigment { color Yellow }
-  }
-}
+OBJS
 
 light_source { <LIGHTPOS> color White}
 """
@@ -33,6 +31,29 @@ light_source { <LIGHTPOS> color White}
     sceneContent = sceneContent.replace("CAMERAPOS", str(scene.cameraPos[0])+","+str(scene.cameraPos[1])+","+str(scene.cameraPos[2]))
 
     sceneContent = sceneContent.replace("LIGHTPOS",  str(scene.lightPos[0])+","+str(scene.lightPos[1])+","+str(scene.lightPos[2]))
+
+    objsText = ""
+
+    if scene.enSphere:
+        objsText += """
+sphere {
+  <0, 1, 40>, 2
+  texture {
+    pigment { color Yellow }
+  }
+}"""
+
+    if scene.enBox:
+        objsText += """
+box {
+  <-1, -1, 1.5>, <1, 1, 2.5>
+  texture {
+    pigment { color Yellow }
+  }
+}
+"""
+    sceneContent = sceneContent.replace("OBJS", objsText)
+
 
     f = open("TEMPScene.pov", 'w')
     f.write(sceneContent)
@@ -88,23 +109,48 @@ def main():
         gameDisplay.fill(black) # fill background
 
 
+        # render scene to compute BB of object A
+        if True: # block
+            scene.enBox = True
+            scene.enSphere = False
+
+            renderScene(scene, displaySize) # render scene with renderer
+
+            # compute bounding box of object by synthetic mask
+            #
+            # we use a synthetic mask because we want to focus effort on UL with prototypes,
+            # not generation of proposal BB from natural images
+            #
+            #
+            # see https://www.pyimagesearch.com/2016/02/08/opencv-shape-detection/
+            img = cv2.imread("TEMPScene.png")
+            imgGray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+            ret, imgBinary = cv2.threshold(imgGray,12,255,cv2.THRESH_BINARY)
+            synMaskRect = cv2.boundingRect(imgBinary)
+            del imgBinary # remove to avoid confusion
+            del img
+            del imgGray
+            del ret
+
+
+
+        
+        scene.enBox = True
+        scene.enSphere = True
+
+
+
         renderScene(scene, displaySize) # render scene with renderer
 
         image = pygame.image.load("TEMPScene.png")     
         gameDisplay.blit(image, (0, 0))
 
 
-        # compute bounding box of object by synthetic mask
-        #
-        # we use a synthetic mask because we want to focus effort on UL with prototypes,
-        # not generation of proposal BB from natural images
-        #
-        #
-        # see https://www.pyimagesearch.com/2016/02/08/opencv-shape-detection/
         img = cv2.imread("TEMPScene.png")
         imgGray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-        ret, imgBinary = cv2.threshold(imgGray,12,255,cv2.THRESH_BINARY)
-        synMaskRect = cv2.boundingRect(imgBinary)
+        #ret, imgBinary = cv2.threshold(imgGray,12,255,cv2.THRESH_BINARY)
+        #synMaskRect = cv2.boundingRect(imgBinary)
+
 
         # draw bounding lines
         pygame.draw.rect(gameDisplay, (255,0,0,127), (synMaskRect[0], synMaskRect[1], synMaskRect[2], 3), width=0, border_radius=0)
@@ -131,6 +177,8 @@ def main():
         sim, id = c.perceive(input0)
         print("H CLASSIFIER "+str((sim, id)))
 
+
+        
         # give UL classifier compute to learn
         for it in range(50):
             c.trainRound()
