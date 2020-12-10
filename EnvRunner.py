@@ -162,44 +162,37 @@ def main():
         ret, diffImgBinary = cv2.threshold(diffImgGray,12,255,cv2.THRESH_BINARY) # threshold to get mask of regions which moved enough
         # * segment motion into regions
         # TODO< implement algorithm with OpenCV >
-        
-        # compute bounding box of object by synthetic mask
-        #
-        #
-        #
-        # see https://www.pyimagesearch.com/2016/02/08/opencv-shape-detection/        
-        synMaskRect = cv2.boundingRect(diffImgBinary)
 
-        
-        #ret, imgBinary = cv2.threshold(imgGray,12,255,cv2.THRESH_BINARY)
-        #synMaskRect = cv2.boundingRect(imgBinary)
+        contours, hierachy = cv2.findContours(diffImgBinary, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)[-2:]
+        del hierachy
+        for iContour in contours:
+            synMaskRect = cv2.boundingRect(iContour) # compute bounding box of object
 
+            # draw bounding lines
+            pygame.draw.rect(gameDisplay, (255,0,0,127), (synMaskRect[0], synMaskRect[1], synMaskRect[2], 3), width=0, border_radius=0)
+            pygame.draw.rect(gameDisplay, (255,0,0,127), (synMaskRect[0], synMaskRect[1]+synMaskRect[3], synMaskRect[2], 3), width=0, border_radius=0)
 
-        # draw bounding lines
-        pygame.draw.rect(gameDisplay, (255,0,0,127), (synMaskRect[0], synMaskRect[1], synMaskRect[2], 3), width=0, border_radius=0)
-        pygame.draw.rect(gameDisplay, (255,0,0,127), (synMaskRect[0], synMaskRect[1]+synMaskRect[3], synMaskRect[2], 3), width=0, border_radius=0)
+            # compute BB with biggest extend
+            x, y, w, h = synMaskRect
+            cx, cy = x + int(w/2), y + int(h/2)
+            maxExtend = max(w, h)
+            x2, y2 = cx - int(maxExtend/2), cy - int(maxExtend/2)
+            w2, h2 = maxExtend, maxExtend
 
-        # compute BB with biggest extend
-        x, y, w, h = synMaskRect
-        cx, cy = x + int(w/2), y + int(h/2)
-        maxExtend = max(w, h)
-        x2, y2 = cx - int(maxExtend/2), cy - int(maxExtend/2)
-        w2, h2 = maxExtend, maxExtend
+            if w2 > 0 and h2 > 0:
+                # crop by BB
+                croppedImg = imgGray[y2:y2+h2, x2:x2+w2] # idx with [y:y+h, x:x+w]
 
-        if w2 > 0 and h2 > 0:
-            # crop by BB
-            croppedImg = imgGray[y2:y2+h2, x2:x2+w2] # idx with [y:y+h, x:x+w]
+                # scale cropped image to 32x32
+                print(croppedImg.shape)
+                rescaledCroppedImg = cv2.resize(croppedImg, (32, 32))
+                print(rescaledCroppedImg.shape)
 
-            # scale cropped image to 32x32
-            print(croppedImg.shape)
-            rescaledCroppedImg = cv2.resize(croppedImg, (32, 32))
-            print(rescaledCroppedImg.shape)
-
-            # feed image to UL-Classifier to classify
-            flattenArray = rescaledCroppedImg.flatten()
-            input0 = torch.FloatTensor(flattenArray)
-            sim, id = c.perceive(input0)
-            print("H CLASSIFIER "+str((sim, id)))
+                # feed image to UL-Classifier to classify
+                flattenArray = rescaledCroppedImg.flatten()
+                input0 = torch.FloatTensor(flattenArray)
+                sim, id = c.perceive(input0)
+                print("H CLASSIFIER "+str((sim, id)))
 
         
         # POSTFRAME WORK
