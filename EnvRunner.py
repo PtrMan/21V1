@@ -87,6 +87,10 @@ def main():
 
     gameDisplay = pygame.display.set_mode(displaySize)
     pygame.display.set_caption('ENV')
+    
+    
+    
+    lastFrameGray = None # we don't have any last frame
 
     while True: # "game"loop
         t+=0.3 # advance time
@@ -148,6 +152,20 @@ def main():
 
         img = cv2.imread("TEMPScene.png")
         imgGray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        if lastFrameGray == None:
+            lastFrameGray = imgGray.copy() # we need to init frame
+
+        
+        
+        # compute motion, binarize motion, segment motion
+        diffImgGray = cv.absdiff(imgGray, lastFrameGray) # compute difference between current image and last image
+        ret, diffImgBinary = cv2.threshold(diffImgGray,12,255,cv2.THRESH_BINARY) # threshold to get mask of regions which moved enough
+        # * segment motion into regions
+        # TODO< implement algorithm with OpenCV >
+        
+        
+
+        
         #ret, imgBinary = cv2.threshold(imgGray,12,255,cv2.THRESH_BINARY)
         #synMaskRect = cv2.boundingRect(imgBinary)
 
@@ -177,14 +195,19 @@ def main():
         sim, id = c.perceive(input0)
         print("H CLASSIFIER "+str((sim, id)))
 
-
         
+        # POSTFRAME WORK
+        lastFrameGray = imgGray.copy()
+        
+        
+
         # give UL classifier compute to learn
         for it in range(50):
             c.trainRound()
         
         c.decay()
 
+        # UI
         # Draws the surface object to the screen
         pygame.display.update()
 
