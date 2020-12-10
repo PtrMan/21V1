@@ -95,7 +95,7 @@ def main():
     while True: # "game"loop
         t+=0.3 # advance time
 
-        scene.cameraPos = [0.0+(t % 2.0), 2.0, -3.0]
+        scene.cameraPos = [0.0+((t*0.1) % 2.0), 2.0, -3.0]
 
         # jiggle around light so that stimulus isn't exactly equal
         scene.lightPos = [scene.cameraPos[0] + math.cos(t*50.0)*110.0, 2.0, -3.0]
@@ -112,7 +112,7 @@ def main():
         black = (0, 0, 0)
         gameDisplay.fill(black) # fill background
 
-
+        """
         # render scene to compute BB of object A
         if True: # block
             scene.enBox = True
@@ -135,11 +135,11 @@ def main():
             del img
             del imgGray
             del ret
-
+        """
 
 
         
-        scene.enBox = True
+        scene.enBox = False
         scene.enSphere = True
 
 
@@ -163,7 +163,12 @@ def main():
         # * segment motion into regions
         # TODO< implement algorithm with OpenCV >
         
-        
+        # compute bounding box of object by synthetic mask
+        #
+        #
+        #
+        # see https://www.pyimagesearch.com/2016/02/08/opencv-shape-detection/        
+        synMaskRect = cv2.boundingRect(diffImgBinary)
 
         
         #ret, imgBinary = cv2.threshold(imgGray,12,255,cv2.THRESH_BINARY)
@@ -181,19 +186,20 @@ def main():
         x2, y2 = cx - int(maxExtend/2), cy - int(maxExtend/2)
         w2, h2 = maxExtend, maxExtend
 
-        # crop by BB
-        croppedImg = imgGray[y2:y2+h2, x2:x2+w2] # idx with [y:y+h, x:x+w]
+        if w2 > 0 and h2 > 0:
+            # crop by BB
+            croppedImg = imgGray[y2:y2+h2, x2:x2+w2] # idx with [y:y+h, x:x+w]
 
-        # scale cropped image to 32x32
-        print(croppedImg.shape)
-        rescaledCroppedImg = cv2.resize(croppedImg, (32, 32))
-        print(rescaledCroppedImg.shape)
+            # scale cropped image to 32x32
+            print(croppedImg.shape)
+            rescaledCroppedImg = cv2.resize(croppedImg, (32, 32))
+            print(rescaledCroppedImg.shape)
 
-        # feed image to UL-Classifier to classify
-        flattenArray = rescaledCroppedImg.flatten()
-        input0 = torch.FloatTensor(flattenArray)
-        sim, id = c.perceive(input0)
-        print("H CLASSIFIER "+str((sim, id)))
+            # feed image to UL-Classifier to classify
+            flattenArray = rescaledCroppedImg.flatten()
+            input0 = torch.FloatTensor(flattenArray)
+            sim, id = c.perceive(input0)
+            print("H CLASSIFIER "+str((sim, id)))
 
         
         # POSTFRAME WORK
