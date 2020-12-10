@@ -152,13 +152,13 @@ def main():
 
         img = cv2.imread("TEMPScene.png")
         imgGray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-        if lastFrameGray == None:
+        if lastFrameGray is None:
             lastFrameGray = imgGray.copy() # we need to init frame
 
         
         
         # compute motion, binarize motion, segment motion
-        diffImgGray = cv.absdiff(imgGray, lastFrameGray) # compute difference between current image and last image
+        diffImgGray = cv2.absdiff(imgGray, lastFrameGray) # compute difference between current image and last image
         ret, diffImgBinary = cv2.threshold(diffImgGray,12,255,cv2.THRESH_BINARY) # threshold to get mask of regions which moved enough
         # * segment motion into regions
         # TODO< implement algorithm with OpenCV >
