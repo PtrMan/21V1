@@ -10,6 +10,7 @@
 
 ## install
 conda is recommended for managing the python environment
+
     conda create --name ml
     conda activate ml
     conda install -n ml pytorch
