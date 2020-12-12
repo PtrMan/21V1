@@ -160,8 +160,13 @@ def main():
         # compute motion, binarize motion, segment motion
         diffImgGray = cv2.absdiff(imgGray, lastFrameGray) # compute difference between current image and last image
         ret, diffImgBinary = cv2.threshold(diffImgGray,12,255,cv2.THRESH_BINARY) # threshold to get mask of regions which moved enough
+        
+        kernel = np.ones((3,3),np.uint8)
+        erosion = cv2.dilate(diffImgBinary,kernel,iterations = 7)
+        erosion = cv2.erode(diffImgBinary,kernel,iterations = 7)
+
         # * segment motion into regions
-        # TODO< implement algorithm with OpenCV >
+        
 
         contours, hierachy = cv2.findContours(diffImgBinary, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)[-2:]
         del hierachy
@@ -195,6 +200,13 @@ def main():
                 print("H CLASSIFIER "+str((sim, id)))
 
         
+        # DEBUG (image is upside down and flipped but this is fine)
+        if False:
+            dbgImgSurf = pygame.surfarray.make_surface(diffImgBinary)
+            gameDisplay.blit(dbgImgSurf, (0, 0))
+            del dbgImgSurf
+
+
         # POSTFRAME WORK
         lastFrameGray = imgGray.copy()
         
