@@ -46,7 +46,7 @@ sphere {
     if scene.enBox:
         objsText += """
 box {
-  <-1, -1, 1.5>, <1, 1, 2.5>
+  <-10, -2, 40.5>, <-8, 2, 42.5>
   texture {
     pigment { color Yellow }
   }
@@ -139,7 +139,7 @@ def main():
 
 
         
-        scene.enBox = False
+        scene.enBox = True
         scene.enSphere = True
 
 
@@ -162,8 +162,8 @@ def main():
         ret, diffImgBinary = cv2.threshold(diffImgGray,12,255,cv2.THRESH_BINARY) # threshold to get mask of regions which moved enough
         
         kernel = np.ones((3,3),np.uint8)
-        erosion = cv2.dilate(diffImgBinary,kernel,iterations = 7)
-        erosion = cv2.erode(diffImgBinary,kernel,iterations = 7)
+        diffImgBinary = cv2.dilate(diffImgBinary,kernel,iterations = 7)
+        diffImgBinary = cv2.erode(diffImgBinary,kernel,iterations = 7)
 
         # * segment motion into regions
         
