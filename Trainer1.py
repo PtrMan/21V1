@@ -32,7 +32,7 @@ class C(object):
         self.prototypeIdCntr = 0 # counter to keep track of prototype ids
         self.nPrototypes = 50 # number of prototypes
         #self.distThreshold = 1.0 # threshold to create new prototype
-        self.hcosThreshold = 0.0032 #0.03 # theshold for hidden layer measured by cosine distance to create new prototype
+        self.hcosThreshold = 0.01 #0.0032 #0.03 # theshold for hidden layer measured by cosine distance to create new prototype
 
         self.model = AE(32*32)
 
