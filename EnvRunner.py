@@ -4,6 +4,7 @@
 class Scene(object):
     def __init__(self):
         self.cameraPos = [0.0, 0.0, 0.0]
+        self.lookAt = [0.0, 0.0, 1.0]
 
         self.lightPos = [0.0, 0.0, 0.0]
 
@@ -20,7 +21,7 @@ background { color Black }
 
 camera {
   location <CAMERAPOS>
-  look_at <0, 1, 2>
+  look_at <LOOKAT>
 }
 
 OBJS
@@ -32,26 +33,39 @@ light_source { <LIGHTPOS> color White}
 
     sceneContent = sceneContent.replace("LIGHTPOS",  str(scene.lightPos[0])+","+str(scene.lightPos[1])+","+str(scene.lightPos[2]))
 
+    sceneContent = sceneContent.replace("LOOKAT",  str(scene.lookAt[0])+","+str(scene.lookAt[1])+","+str(scene.lookAt[2]))
+
+
     objsText = ""
 
     if scene.enSphere:
         objsText += """
 sphere {
-  <0, 1, 40>, 2
+  <0.0, 0.0, -2.8>, 0.03
   texture {
     pigment { color Yellow }
   }
 }"""
 
     if scene.enBox:
+        boxcenter = [-0.1, 0.0, -2.8]
+        boxextend = [0.08, 0.08, 0.08]
+
+        # positions of edges of box as string
+        #edgePointsAsStr = "<-0.7, -0.05, -2.9>, <-0.5, 0.05, -2.7>"
+
+        edgePointsAsStr = f"<{boxcenter[0]-boxextend[0]/2.0},{boxcenter[1]-boxextend[1]/2.0},{boxcenter[2]-boxextend[2]/2.0}>, <{boxcenter[0]+boxextend[0]/2.0},{boxcenter[1]+boxextend[1]/2.0},{boxcenter[2]+boxextend[2]/2.0}>"
+        
         objsText += """
 box {
-  <-10, -2, 40.5>, <-8, 2, 42.5>
+  POSS
   texture {
     pigment { color Yellow }
   }
 }
-"""
+""".replace("POSS", edgePointsAsStr) # replace position with src-code of position
+
+
     sceneContent = sceneContent.replace("OBJS", objsText)
 
 
@@ -95,10 +109,12 @@ def main():
     while True: # "game"loop
         t+=0.3 # advance time
 
-        scene.cameraPos = [0.0+((t*0.1) % 2.0), 2.0, -3.0]
+        scene.cameraPos = [0.0, 0.2, -3.0]
+        scene.lookAt = [0.0, 0.2-1.0, -3.0+1.0]
+
 
         # jiggle around light so that stimulus isn't exactly equal
-        scene.lightPos = [scene.cameraPos[0] + math.cos(t*50.0)*110.0, 2.0, -3.0]
+        scene.lightPos = [0.0+((t*0.1) % 2.0) + math.cos(t*50.0)*110.0, 2.0, -3.0]
         
         # iterate over the list of Event objects 
         for event in pygame.event.get():
