@@ -171,7 +171,18 @@ def main():
         if lastFrameGray is None:
             lastFrameGray = imgGray.copy() # we need to init frame
 
-        
+        # compute optical flow
+        # commented because not yet used
+        #flow = cv2.calcOpticalFlowFarneback(lastFrameGray,imgGray, None, 0.5, 3, 15, 3, 5, 1.2, 0)
+
+        # commented because it doesn't work
+        #mag, ang = cv2.cartToPolar(flow[...,0], flow[...,1])
+        #hsv = np.zeros_like(imgGray)
+        #hsv[...,1] = 255
+        #hsv[...,0] = ang*180/np.pi/2
+        #hsv[...,2] = cv2.normalize(mag,None,0,255,cv2.NORM_MINMAX)
+        #flowRgb = cv2.cvtColor(hsv,cv2.COLOR_HSV2BGR)
+
         
         # compute motion, binarize motion, segment motion
         diffImgGray = cv2.absdiff(imgGray, lastFrameGray) # compute difference between current image and last image
