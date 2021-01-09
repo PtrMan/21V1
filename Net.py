@@ -9,7 +9,7 @@ import torch.nn.functional as F
 class Net(nn.Module):
 	def __init__(self, nInput, nOutput):
 		super(Net, self).__init__()
-		nHidden = 10 # 6 # number of hidden neurons
+		nHidden = 7 # number of hidden neurons
 		self.fca1 = nn.Linear(nInput, nHidden)
 		self.fca2 = nn.Linear(nHidden, nOutput)
 		#self.res = nn.Tanh()
