@@ -117,6 +117,7 @@ def main():
         inputAndTarget.append((torch.tensor(inputArr), torch.tensor(expectedOut))) # add to trainingset
         del inputArr
         del expectedOut
+        del iSceneDescriptionOutArr
 
     # training to ignore changing lighting conditions
     sceneConfigs = []
@@ -147,6 +148,8 @@ def main():
 
     idx = -1
     for iSceneConfig in sceneConfigs:
+        iSceneDescriptionOutArr = [0.1,0.9] # no motion -> no proposal
+        
         idx+=1
 
         scene = Scene()
@@ -230,8 +233,8 @@ def main():
                 lossTensor.backward()
             
             loss = lossTensor.item()
-            if loss < 1.0e-4:
-                break # break because loss is small enough
+            #if loss < 1.0e-8:
+            #    break # break because loss is small enough
             
             # print loss
             if itCnt % 10 == 0:
