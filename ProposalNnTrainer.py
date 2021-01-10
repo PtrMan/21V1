@@ -98,8 +98,11 @@ def main():
 
     # training to ignore changing lighting conditions
     sceneConfigs = []
-    sceneConfigs.append({"cameraPosA":[0.0, 0.2, -3.0],"lookAtA":[0.0, 0.2-1.0, -3.0+1.0], "cameraPosB":[0.0, 0.2, -3.0], "sceneDescriptionOutArr":[0.1, 0.9], "lightA":[0.0, 1.0, -3.0], "lightB":[0.0, 0.0, -3.0]})# moving light 
-    sceneConfigs.append({"cameraPosA":[0.0, 0.2, -3.0],"lookAtA":[0.0, 0.2-1.0, -3.0+1.0], "cameraPosB":[0.0, 0.2, -3.0], "sceneDescriptionOutArr":[0.1, 0.9], "lightA":[0.0, 0.0, -3.0], "lightB":[0.0, 1.0, -3.0]})# moving light 
+    # for box
+    sceneConfigs.append({"boxesA":[[-0.0, 0.0, -2.8]], "spheresA":[],  "cameraPosA":[0.0, 0.2, -3.0],"lookAtA":[0.0, 0.2-1.0, -3.0+1.0], "cameraPosB":[0.0, 0.2, -3.0], "sceneDescriptionOutArr":[0.1, 0.9], "lightA":[0.0, 1.0, -3.0], "lightB":[0.0, 0.0, -3.0]})# moving light 
+    sceneConfigs.append({"boxesA":[[-0.0, 0.0, -2.8]], "spheresA":[],  "cameraPosA":[0.0, 0.2, -3.0],"lookAtA":[0.0, 0.2-1.0, -3.0+1.0], "cameraPosB":[0.0, 0.2, -3.0], "sceneDescriptionOutArr":[0.1, 0.9], "lightA":[0.0, 0.0, -3.0], "lightB":[0.0, 1.0, -3.0]})# moving light 
+
+    # for sphere
 
 
 
@@ -111,11 +114,13 @@ def main():
         scene.cameraPos = iSceneConfig["cameraPosA"]
         scene.lookAt = iSceneConfig["lookAtA"]
 
-        scene.boxCenters[0] = [-0.0, 0.0, -2.8]
+        scene.enBox = len(iSceneConfig["boxesA"]) > 0
+        scene.enSphere = len(iSceneConfig["boxesA"]) > 0
+
+        scene.boxCenters = iSceneConfig["boxesA"]
+        # TODO< sphere centers >
 
         scene.lightPos = iSceneConfig["lightA"]
-
-        scene.enSphere = False
 
         # render and read training images
         imgBeforeGray = renderSceneAndReturnImageGray64(scene, f'trainLighting{idx}A.png')
