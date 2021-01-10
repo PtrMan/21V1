@@ -2,11 +2,23 @@
 
 import math
 import cv2
+import torch
+import torch.nn as nn
+
 from Trainer1 import * # import UL classifier
 
 from RenderScene import *
+from Net import * # import feed forward network for proposal generator
+
+class ObjectProposal(object):
+    def __init__(self, cx, cy, size):
+        self.cx = cx
+        self.cy = cy
+        self.size = size
 
 def main():
+    net = torch.load("proposalGen.pytorch-model") # load proposal generator network
+
     import pygame
 
     c = C() # UL classifier
@@ -95,8 +107,55 @@ def main():
             lastFrameGray = imgGray.copy() # we need to init frame
 
         # compute optical flow
-        # commented because not yet used
-        #flow = cv2.calcOpticalFlowFarneback(lastFrameGray,imgGray, None, 0.5, 3, 15, 3, 5, 1.2, 0)
+        flow = cv2.calcOpticalFlowFarneback(lastFrameGray,imgGray, None, 0.5, 3, 15, 3, 5, 1.2, 0)
+
+        # compute object proposals by motion
+        # * prepare
+        objectProposals = [] # all object proposals by motion
+
+        proposalSize = 128# imagesize used for proposal generator
+
+        height, width = flow.shape[:2]
+        nX = int(width / (proposalSize/2)) # count of x iterations
+        nY = int(height / (proposalSize/2)) # count of y iterations
+        # * actual computation
+        for ix in range(nX):
+            for iy in range(nY):
+                
+
+                # calc center position
+                cx = int(proposalSize/2 + proposalSize/2 * ix)
+                cy = int(proposalSize/2 + proposalSize/2 * iy)
+
+                # crop motion image
+                croppedMotionImg = flow[cy-int(proposalSize/2):cy+int(proposalSize/2), cx-int(proposalSize/2):cx+int(proposalSize/2)] # idx with [y:y+h, x:x+w]
+
+                # scale cropped image to fied size to feed into NN
+                croppedMotionImg = cv2.resize(croppedMotionImg, (64, 64))
+
+                # feed into NN
+                flowArr = croppedMotionImg.flatten().tolist() # convert image array to flat array
+                out = net(torch.tensor(flowArr))
+
+                # interpret result
+                print(f'{out[0]} {out[1]}')
+                sel0 = out[0] > 0.0
+                sel1 = out[1] > 0.0
+                if sel0 and sel1: # is selection valid? if not then we just ignore the result!
+                    n = 2
+                    maxSelVal = float("-inf")
+                    maxSelIdx = None
+                    for iIdx in range(n):
+                        if out[iIdx] > maxSelVal:
+                            maxSelIdx = iIdx
+                            maxSelVal = out[iIdx]
+                    
+                    if maxSelIdx == n-1: # case when the proposal wasn't made for this cropped image
+                        pass
+                    elif maxSelIdx == 0: # was selection criterion [0] chosen?
+                        # add to proposals because this was selected as a proposal
+                        objectProposals.append(ObjectProposal(cx,cy,proposalSize))
+                
 
         # commented because it doesn't work
         #mag, ang = cv2.cartToPolar(flow[...,0], flow[...,1])
@@ -115,6 +174,14 @@ def main():
         diffImgBinary = cv2.dilate(diffImgBinary,kernel,iterations = 7)
         diffImgBinary = cv2.erode(diffImgBinary,kernel,iterations = 7)
 
+        # draw debug of bounding box
+        # /param rect rect of the bounding box, ex: (5, 10, 15, 17)
+        # /param color color as tuple, ex: (255,0,0,127)
+        def drawBb(rect, color):
+            pygame.draw.rect(gameDisplay, color, (rect[0], rect[1], rect[2], 3), width=0, border_radius=0)
+            pygame.draw.rect(gameDisplay, color, (rect[0], rect[1]+rect[3], rect[2], 3), width=0, border_radius=0)
+
+
         # * segment motion into regions
         
 
@@ -124,8 +191,7 @@ def main():
             synMaskRect = cv2.boundingRect(iContour) # compute bounding box of object
 
             # draw bounding lines
-            pygame.draw.rect(gameDisplay, (255,0,0,127), (synMaskRect[0], synMaskRect[1], synMaskRect[2], 3), width=0, border_radius=0)
-            pygame.draw.rect(gameDisplay, (255,0,0,127), (synMaskRect[0], synMaskRect[1]+synMaskRect[3], synMaskRect[2], 3), width=0, border_radius=0)
+            drawBb(synMaskRect,(255,0,0,127))
 
             # compute BB with biggest extend
             x, y, w, h = synMaskRect
@@ -155,6 +221,13 @@ def main():
             dbgImgSurf = pygame.surfarray.make_surface(diffImgBinary)
             gameDisplay.blit(dbgImgSurf, (0, 0))
             del dbgImgSurf
+        
+        # DEBUG draw object proposal rectanges by motion
+        if True:
+            for iObjectProposal in objectProposals:
+                rect = (int(iObjectProposal.cx-iObjectProposal.size/2), int(iObjectProposal.cy-iObjectProposal.size/2), iObjectProposal.size, iObjectProposal.size)
+                drawBb(rect, (0,0,255,127))
+
 
 
         # POSTFRAME WORK
