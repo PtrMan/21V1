@@ -1,5 +1,7 @@
 class Scene(object):
     def __init__(self):
+        self.backgroundColor = [0.0, 0.0, 0.0]
+
         self.cameraPos = [0.0, 0.0, 0.0]
         self.lookAt = [0.0, 0.0, 1.0]
 
@@ -16,7 +18,7 @@ def renderScene(scene, displaySize):
     sceneTemplate = """
     #include "colors.inc"    
 
-background { color Black }
+background { color rgb BGCOLOR }
 
 camera {
   location <CAMERAPOS>
@@ -26,7 +28,7 @@ camera {
 OBJS
 
 light_source { <LIGHTPOS> color White}
-"""
+""".replace("BGCOLOR", f'<{scene.backgroundColor[0]},{scene.backgroundColor[1]},{scene.backgroundColor[2]}>')
     sceneContent = sceneTemplate[:]
     sceneContent = sceneContent.replace("CAMERAPOS", str(scene.cameraPos[0])+","+str(scene.cameraPos[1])+","+str(scene.cameraPos[2]))
 
