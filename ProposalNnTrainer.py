@@ -97,20 +97,23 @@ def main():
         del expectedOut
 
     # training to ignore changing lighting conditions
+    sceneConfigs = []
+    sceneConfigs.append({"cameraPosA":[0.0, 0.2, -3.0],"lookAtA":[0.0, 0.2-1.0, -3.0+1.0], "cameraPosB":[0.0, 0.2, -3.0], "sceneDescriptionOutArr":[0.1, 0.9], "lightA":[0.0, 1.0, -3.0], "lightB":[0.0, 0.0, -3.0]})# moving light 
+    sceneConfigs.append({"cameraPosA":[0.0, 0.2, -3.0],"lookAtA":[0.0, 0.2-1.0, -3.0+1.0], "cameraPosB":[0.0, 0.2, -3.0], "sceneDescriptionOutArr":[0.1, 0.9], "lightA":[0.0, 0.0, -3.0], "lightB":[0.0, 1.0, -3.0]})# moving light 
+
+
+
     idx = -1
-    for iSceneDescMotion, iSceneDescriptionOutArr, lightBefore, lightAfter in [
-        ([0.0,0.0,0.0], [0.1, 0.9],   [0.0, 1.0, -3.0], [0.0, 0.0, -3.0]), # moving light 
-        ([0.0,0.0,0.0], [0.1, 0.9],   [0.0, 0.0, -3.0], [0.0, 1.0, -3.0]), # moving light
-        ]:
+    for iSceneConfig in sceneConfigs:
         idx+=1
 
         scene = Scene()
-        scene.cameraPos = [0.0, 0.2, -3.0]
-        scene.lookAt = [0.0, 0.2-1.0, -3.0+1.0]
+        scene.cameraPos = iSceneConfig["cameraPosA"]
+        scene.lookAt = iSceneConfig["lookAtA"]
 
         scene.boxCenters[0] = [-0.0, 0.0, -2.8]
 
-        scene.lightPos = lightBefore
+        scene.lightPos = iSceneConfig["lightA"]
 
         scene.enSphere = False
 
@@ -118,11 +121,9 @@ def main():
         imgBeforeGray = renderSceneAndReturnImageGray64(scene, f'trainLighting{idx}A.png')
 
         # move camera to get movement vector
-        scene.cameraPos[0] += iSceneDescMotion[0]
-        scene.cameraPos[1] += iSceneDescMotion[1]
-        scene.cameraPos[2] += iSceneDescMotion[2]
+        scene.cameraPos = iSceneConfig["cameraPosB"]
 
-        scene.lightPos = lightAfter
+        scene.lightPos = iSceneConfig["lightB"]
 
         imgCurrentGray = renderSceneAndReturnImageGray64(scene, f'trainLighting{idx}B.png')
 
@@ -187,7 +188,7 @@ def main():
                 lossTensor.backward()
             
             loss = lossTensor.item()
-            if loss < 0.1e-8:
+            if loss < 1.0e-4:
                 break # break because loss is small enough
             
             # print loss
