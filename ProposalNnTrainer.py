@@ -103,8 +103,9 @@ def main():
     sceneConfigs.append({"boxesA":[[-0.0, 0.0, -2.8]], "spheresA":[],  "cameraPosA":[0.0, 0.2, -3.0],"lookAtA":[0.0, 0.2-1.0, -3.0+1.0], "cameraPosB":[0.0, 0.2, -3.0], "sceneDescriptionOutArr":[0.1, 0.9], "lightA":[0.0, 0.0, -3.0], "lightB":[0.0, 1.0, -3.0]})# moving light 
 
     # for sphere
-    sceneConfigs.append({"boxesA":[], "spheresA":[[-0.0, 0.0, -2.8]],  "cameraPosA":[0.0, 0.2, -3.0],"lookAtA":[0.0, 0.2-1.0, -3.0+1.0], "cameraPosB":[0.0, 0.2, -3.0], "sceneDescriptionOutArr":[0.1, 0.9], "lightA":[0.0, 1.0, -3.0], "lightB":[0.0, 0.0, -3.0]})# moving light 
-    sceneConfigs.append({"boxesA":[], "spheresA":[[-0.0, 0.0, -2.8]],  "cameraPosA":[0.0, 0.2, -3.0],"lookAtA":[0.0, 0.2-1.0, -3.0+1.0], "cameraPosB":[0.0, 0.2, -3.0], "sceneDescriptionOutArr":[0.1, 0.9], "lightA":[0.0, 0.0, -3.0], "lightB":[0.0, 1.0, -3.0]})# moving light 
+    for iSphereR in [0.02, 0.03, 0.04, 0.055]: # vary sphere radius
+        sceneConfigs.append({"boxesA":[], "spheresA":[([-0.0, 0.0, -2.8], iSphereR)],  "cameraPosA":[0.0, 0.2, -3.0],"lookAtA":[0.0, 0.2-1.0, -3.0+1.0], "cameraPosB":[0.0, 0.2, -3.0], "sceneDescriptionOutArr":[0.1, 0.9], "lightA":[0.0, 1.0, -3.0], "lightB":[0.0, 0.0, -3.0]})# moving light 
+        sceneConfigs.append({"boxesA":[], "spheresA":[([-0.0, 0.0, -2.8], iSphereR)],  "cameraPosA":[0.0, 0.2, -3.0],"lookAtA":[0.0, 0.2-1.0, -3.0+1.0], "cameraPosB":[0.0, 0.2, -3.0], "sceneDescriptionOutArr":[0.1, 0.9], "lightA":[0.0, 0.0, -3.0], "lightB":[0.0, 1.0, -3.0]})# moving light 
 
 
 

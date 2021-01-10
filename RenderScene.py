@@ -8,7 +8,7 @@ class Scene(object):
         self.lightPos = [0.0, 0.0, 0.0]
 
         self.boxCenters = [[-0.1, 0.0, -2.8]]
-        self.sphereCenters = [[0.0, 0.0, -2.8]]
+        self.spheres = [([0.0, 0.0, -2.8], 0.03)]
 
         self.enBox = True
 
@@ -39,10 +39,8 @@ light_source { <LIGHTPOS> color White}
 
     objsText = ""
 
-    for iSphere in scene.sphereCenters:
-        print(f'DBG {iSphere}')
-
-        spherePosAsStr = f'<{iSphere[0]},{iSphere[1]},{iSphere[2]}>, 0.03'
+    for iSphereCenter, iSphereR in scene.spheres:
+        spherePosAsStr = f'<{iSphereCenter[0]},{iSphereCenter[1]},{iSphereCenter[2]}>, {iSphereR}'
 
         objsText += """
 sphere {
