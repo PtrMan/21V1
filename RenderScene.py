@@ -6,9 +6,9 @@ class Scene(object):
         self.lightPos = [0.0, 0.0, 0.0]
 
         self.boxCenters = [[-0.1, 0.0, -2.8]]
+        self.sphereCenters = [[0.0, 0.0, -2.8]]
 
         self.enBox = True
-        self.enSphere = True
 
 # generate povray scene, write it to file, render file
 # write png to local file
@@ -37,23 +37,24 @@ light_source { <LIGHTPOS> color White}
 
     objsText = ""
 
-    if scene.enSphere:
+    for iSphere in scene.sphereCenters:
+        print(f'DBG {iSphere}')
+
+        spherePosAsStr = f'<{iSphere[0]},{iSphere[1]},{iSphere[2]}>, 0.03'
+
         objsText += """
 sphere {
-  <0.0, 0.0, -2.8>, 0.03
+  POSS
   texture {
     pigment { color Yellow }
   }
-}"""
+}""".replace("POSS", spherePosAsStr) # replace position with src-code of position
 
-    if scene.enBox:
-        boxcenter = scene.boxCenters[0] # hardcoded to take first box center
+    for iBoxCenter in scene.boxCenters:
         boxextend = [0.08, 0.08, 0.08]
 
         # positions of edges of box as string
-        #edgePointsAsStr = "<-0.7, -0.05, -2.9>, <-0.5, 0.05, -2.7>"
-
-        edgePointsAsStr = f"<{boxcenter[0]-boxextend[0]/2.0},{boxcenter[1]-boxextend[1]/2.0},{boxcenter[2]-boxextend[2]/2.0}>, <{boxcenter[0]+boxextend[0]/2.0},{boxcenter[1]+boxextend[1]/2.0},{boxcenter[2]+boxextend[2]/2.0}>"
+        edgePointsAsStr = f"<{iBoxCenter[0]-boxextend[0]/2.0},{iBoxCenter[1]-boxextend[1]/2.0},{iBoxCenter[2]-boxextend[2]/2.0}>, <{iBoxCenter[0]+boxextend[0]/2.0},{iBoxCenter[1]+boxextend[1]/2.0},{iBoxCenter[2]+boxextend[2]/2.0}>"
         
         objsText += """
 box {
