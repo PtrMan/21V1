@@ -30,6 +30,11 @@ def renderSceneAndReturnImageGray64(scene, copyImageDest = None):
     imgGray = cv2.resize(imgGray, (64, 64))
     return imgGray
 
+import random # to gnerate a lot of training data
+
+def vecAdd(a,b):
+    return [a[0]+b[0],a[1]+b[1],a[2]+b[2]]
+
 def main():
     ###########################
     ### build trainingset
@@ -98,14 +103,22 @@ def main():
 
     # training to ignore changing lighting conditions
     sceneConfigs = []
-    # for box
-    sceneConfigs.append({"boxesA":[[-0.0, 0.0, -2.8]], "spheresA":[],  "cameraPosA":[0.0, 0.2, -3.0],"lookAtA":[0.0, 0.2-1.0, -3.0+1.0], "cameraPosB":[0.0, 0.2, -3.0], "sceneDescriptionOutArr":[0.1, 0.9], "lightA":[0.0, 1.0, -3.0], "lightB":[0.0, 0.0, -3.0]})# moving light 
-    sceneConfigs.append({"boxesA":[[-0.0, 0.0, -2.8]], "spheresA":[],  "cameraPosA":[0.0, 0.2, -3.0],"lookAtA":[0.0, 0.2-1.0, -3.0+1.0], "cameraPosB":[0.0, 0.2, -3.0], "sceneDescriptionOutArr":[0.1, 0.9], "lightA":[0.0, 0.0, -3.0], "lightB":[0.0, 1.0, -3.0]})# moving light 
 
-    # for sphere
-    for iSphereR in [0.02, 0.03, 0.04, 0.055]: # vary sphere radius
-        sceneConfigs.append({"boxesA":[], "spheresA":[([-0.0, 0.0, -2.8], iSphereR)],  "cameraPosA":[0.0, 0.2, -3.0],"lookAtA":[0.0, 0.2-1.0, -3.0+1.0], "cameraPosB":[0.0, 0.2, -3.0], "sceneDescriptionOutArr":[0.1, 0.9], "lightA":[0.0, 1.0, -3.0], "lightB":[0.0, 0.0, -3.0]})# moving light 
-        sceneConfigs.append({"boxesA":[], "spheresA":[([-0.0, 0.0, -2.8], iSphereR)],  "cameraPosA":[0.0, 0.2, -3.0],"lookAtA":[0.0, 0.2-1.0, -3.0+1.0], "cameraPosB":[0.0, 0.2, -3.0], "sceneDescriptionOutArr":[0.1, 0.9], "lightA":[0.0, 0.0, -3.0], "lightB":[0.0, 1.0, -3.0]})# moving light 
+    random.seed(42+7)
+
+    diffvecs = []
+    for i in range(5):
+        diffvecs.append([random.uniform(-1.0, 1.0),random.uniform(-1.0, 1.0),random.uniform(-1.0, 1.0)])
+    
+    for iDiffvec in diffvecs: # iterate over difference vectors for light positions
+        # for box
+        sceneConfigs.append({"boxesA":[[-0.0, 0.0, -2.8]], "spheresA":[],  "cameraPosA":[0.0, 0.2, -3.0],"lookAtA":[0.0, 0.2-1.0, -3.0+1.0], "cameraPosB":[0.0, 0.2, -3.0], "sceneDescriptionOutArr":[0.1, 0.9], "lightA":[0.0, 1.0, -3.0], "lightB":vecAdd([0.0, 1.0, -3.0], iDiffvec)})# moving light 
+        sceneConfigs.append({"boxesA":[[-0.0, 0.0, -2.8]], "spheresA":[],  "cameraPosA":[0.0, 0.2, -3.0],"lookAtA":[0.0, 0.2-1.0, -3.0+1.0], "cameraPosB":[0.0, 0.2, -3.0], "sceneDescriptionOutArr":[0.1, 0.9], "lightA":[0.0, 0.0, -3.0], "lightB":vecAdd([0.0, 0.0, -3.0], iDiffvec)})# moving light 
+
+        # for sphere
+        for iSphereR in [0.02, 0.03, 0.04, 0.055]: # vary sphere radius
+            sceneConfigs.append({"boxesA":[], "spheresA":[([-0.0, 0.0, -2.8], iSphereR)],  "cameraPosA":[0.0, 0.2, -3.0],"lookAtA":[0.0, 0.2-1.0, -3.0+1.0], "cameraPosB":[0.0, 0.2, -3.0], "sceneDescriptionOutArr":[0.1, 0.9], "lightA":[0.0, 1.0, -3.0], "lightB":vecAdd([0.0, 1.0, -3.0], iDiffvec)})# moving light 
+            sceneConfigs.append({"boxesA":[], "spheresA":[([-0.0, 0.0, -2.8], iSphereR)],  "cameraPosA":[0.0, 0.2, -3.0],"lookAtA":[0.0, 0.2-1.0, -3.0+1.0], "cameraPosB":[0.0, 0.2, -3.0], "sceneDescriptionOutArr":[0.1, 0.9], "lightA":[0.0, 0.0, -3.0], "lightB":vecAdd([0.0, 0.0, -3.0], iDiffvec)})# moving light 
 
 
 
@@ -119,7 +132,7 @@ def main():
         scene.lookAt = iSceneConfig["lookAtA"]
 
         scene.boxCenters = iSceneConfig["boxesA"]
-        scene.sphereCenters = iSceneConfig["spheresA"]
+        scene.spheres = iSceneConfig["spheresA"]
 
         scene.lightPos = iSceneConfig["lightA"]
 
