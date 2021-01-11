@@ -20,3 +20,8 @@ conda is recommended for managing the python environment
     
     conda activate ml
     python3 -m pip install -U pygame --user
+
+#models
+This system needs (pretrained) models. Good updated models will be linked here.
+
+TODO< add best model >
