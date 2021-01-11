@@ -31,6 +31,7 @@ def renderSceneAndReturnImageGray64(scene, copyImageDest = None):
     return imgGray
 
 import random # to gnerate a lot of training data
+import math
 
 def vecAdd(a,b):
     return [a[0]+b[0],a[1]+b[1],a[2]+b[2]]
@@ -74,7 +75,7 @@ def main():
     for iDiffvec in diffvecs:
         idx+=1
 
-        isAnyMotion = iDiffvec[0]*iDiffvec[0]+ iDiffvec[1]*iDiffvec[1]+ iDiffvec[2]*iDiffvec[2] > 0.001
+        isAnyMotion = math.sqrt(iDiffvec[0]*iDiffvec[0]+ iDiffvec[1]*iDiffvec[1]+ iDiffvec[2]*iDiffvec[2]) > 0.001
 
         iSceneDescriptionOutArr = [0.1,0.9] # no motion -> no proposal
         if isAnyMotion:
@@ -216,6 +217,8 @@ def main():
     
     print(f'H training ...')
 
+    lossAvg = 1e4
+
     while True: # "game"loop
         itCnt+=1
 
@@ -236,9 +239,12 @@ def main():
             #if loss < 1.0e-8:
             #    break # break because loss is small enough
             
+            lossAvg = lossAvg*0.999 + loss*0.001 # average loss
+
             # print loss
-            if itCnt % 10 == 0:
-                print(f'L {lossTensor.item()}')
+            if itCnt % 6 == 0:
+                print(f'L  {lossTensor.item()}')
+                print(f'H loss avg = {lossAvg}')
             
             optimizer.step()    # Does the update
 
