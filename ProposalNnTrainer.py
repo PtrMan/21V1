@@ -55,6 +55,78 @@ def main():
 
 
 
+
+    if True:# training to ignore motion of object which is not in center
+        sceneConfigs = []
+
+        random.seed(42+7)
+
+        diffvecs = []
+        for i in range(5):
+            diffvecs.append([random.uniform(-1.0, 1.0)*0.07,random.uniform(-1.0, 1.0)*0.07,random.uniform(-1.0, 1.0)*0.07])
+        
+        # differences from the center
+        centerdiffs = []
+        for i in range(14):
+            centerdiffs.append([random.uniform(-1.0, 1.0)*0.22,random.uniform(-1.0, 1.0)*0.22,random.uniform(-1.0, 1.0)*0.22])
+        
+        for iCenterDiff in centerdiffs: # iterate over variation of position
+            for iDiffvec in diffvecs: # iterate over difference vectors for light positions
+                # for box
+                #sceneConfigs.append({"boxesA":[vecAdd([-0.0, 0.0, -2.8],iPosDiff)], "spheresA":[],  "cameraPosA":[0.0, 0.2, -3.0],"lookAtA":[0.0, 0.2-1.0, -3.0+1.0], "cameraPosB":[0.0, 0.2, -3.0], "sceneDescriptionOutArr":[0.1, 0.9], "lightA":[0.0, 1.0, -3.0], "lightB":vecAdd([0.0, 1.0, -3.0], iDiffvec)})# moving light 
+                #sceneConfigs.append({"boxesA":[vecAdd([-0.0, 0.0, -2.8],iPosDiff)], "spheresA":[],  "cameraPosA":[0.0, 0.2, -3.0],"lookAtA":[0.0, 0.2-1.0, -3.0+1.0], "cameraPosB":[0.0, 0.2, -3.0], "sceneDescriptionOutArr":[0.1, 0.9], "lightA":[0.0, 0.0, -3.0], "lightB":vecAdd([0.0, 0.0, -3.0], iDiffvec)})# moving light 
+
+                # for sphere
+                for iSphereR in [0.02, 0.04, 0.06, 0.09]: # vary sphere radius
+                    sceneConfigs.append({"boxesA":[], "spheresA":[(vecAdd([-0.0, 0.0, -2.8],iCenterDiff), iSphereR)],  "cameraPosA":[0.0, 0.2, -3.0],"lookAtA":[0.0, 0.2-1.0, -3.0+1.0], "cameraPosB":vecAdd([0.0, 0.2, -3.0],iDiffvec), "sceneDescriptionOutArr":[0.1, 0.9], "lightA":[0.0, 1.0, -3.0], "lightB":[0.0, 1.0, -3.0]})# moving light 
+
+
+
+
+        idx = -1
+        for iSceneConfig in sceneConfigs:
+            iSceneDescriptionOutArr = [0.1,0.9] # no motion -> no proposal
+            
+            idx+=1
+
+            scene = Scene()
+            scene.backgroundColor = [0.0, 1.0, 0.0] # green for better visualization
+            scene.cameraPos = iSceneConfig["cameraPosA"]
+            scene.lookAt = iSceneConfig["lookAtA"]
+
+            scene.boxCenters = iSceneConfig["boxesA"]
+            scene.spheres = iSceneConfig["spheresA"]
+
+            scene.lightPos = iSceneConfig["lightA"]
+
+            # render and read training images
+            imgBeforeGray = renderSceneAndReturnImageGray64(scene, f'trainNonCenter{idx}A.png')
+
+            # move camera to get movement vector
+            scene.cameraPos = iSceneConfig["cameraPosB"]
+
+            scene.lightPos = iSceneConfig["lightB"]
+
+            imgCurrentGray = renderSceneAndReturnImageGray64(scene, f'trainNonCenter{idx}B.png')
+
+            flow = cv2.calcOpticalFlowFarneback(imgBeforeGray,imgCurrentGray, None, 0.5, 3, 15, 3, 5, 1.2, 0)
+            flowArr = flow.flatten() # convert image array to flat array
+            
+            inputArr = flowArr[:].tolist()
+
+            # [0] is object in center?
+            # [1] was no object detected?
+            expectedOut = iSceneDescriptionOutArr # expected output array
+
+            # add to training set
+            inputAndTarget.append((torch.tensor(inputArr), torch.tensor(expectedOut), "ignoreLightA")) # add to trainingset
+            del inputArr
+            del expectedOut
+
+
+
+
+
     if True:# training to ignore perspective parallax (for now for SpongeBot setting)
 
         random.seed(42+8)
