@@ -1,5 +1,6 @@
 # program to train optical flow based proposal-NN
 
+import time
 
 import torch.optim as optim
 
@@ -328,6 +329,8 @@ def main():
 
     lossAvg = None
 
+    trainingStartT = time.time()
+
     while True: # "game"loop
         itCnt+=1
 
@@ -358,8 +361,11 @@ def main():
             if itCnt % 6 == 0:
                 print(f'L  {lossTensor.item()}')
                 print(f'H loss avg = {lossAvg}')
+                print(f'H time = {time.time()-trainingStartT}')
             
             optimizer.step()    # Does the update
+        
+
 
         # store NN weights
         if itCnt % 150 == 0: # should we export?
