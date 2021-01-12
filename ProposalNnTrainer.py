@@ -269,8 +269,8 @@ def main():
             scene.cameraPos = [0.0, 0.2, -3.0]
             scene.lookAt = [0.0, 0.2-1.0, -3.0+1.0]
 
-            scene.boxCenters[0] = [-0.0, 0.0, -2.8]
-            scene.sphereCenters = []
+            for iBoxCenter in [[-0.0, 0.0, -2.8]]:
+                scene.objs.append(Obj("b", iBoxCenter, [0.08, 0.08, 0.08]))
 
             scene.lightPos = lightBefore
 
@@ -340,8 +340,10 @@ def main():
             scene.cameraPos = iSceneConfig["cameraPosA"]
             scene.lookAt = iSceneConfig["lookAtA"]
 
-            scene.boxCenters = iSceneConfig["boxesA"]
-            scene.spheres = iSceneConfig["spheresA"]
+            for iBoxCenter in iSceneConfig["boxesA"]:
+                scene.objs.append(Obj("b", iBoxCenter, [0.08, 0.08, 0.08]))
+            for iSpherePos in iSceneConfig["spheresA"]:
+                scene.objs.append(Obj("s", iSpherePos, 0.03))
 
             scene.lightPos = iSceneConfig["lightA"]
 
