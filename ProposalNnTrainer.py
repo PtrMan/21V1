@@ -154,7 +154,7 @@ def main():
 
 
 
-    if False:# training for moving object in center
+    if True:# training for moving object in center
 
         random.seed(42+7)
 
@@ -231,7 +231,7 @@ def main():
 
 
 
-    if False:# training to ignore changing lighting conditions
+    if True:# training to ignore changing lighting conditions
         sceneConfigs = []
 
         random.seed(42+7)
