@@ -6,17 +6,31 @@ class Scene(object):
         self.lookAt = [0.0, 0.0, 1.0]
 
         self.lightPos = [0.0, 0.0, 0.0]
+        
+        self.objs = [] # objects in the scene, class Obj
 
-        self.boxCenters = [[-0.1, 0.0, -2.8]]
-        self.spheres = [([0.0, 0.0, -2.8], 0.03)]
+        self.boxCenters = [[-0.1, 0.0, -2.8]] # legacy
+        self.spheres = [([0.0, 0.0, -2.8], 0.03)] # legacy
 
-        self.enBox = True
+        self.enBox = True # legacy
+
+
+
+class Obj(object):
+    # /param type_ name of type of object, "s" for sphere, "b" for box
+    # /param extend can be single value for radius or 3d vector for box
+    def __init__(self, type_, center, extend):
+        self.type_ = type_
+        self.center = center
+        self.extend = extend
+        self.isTextured = False # is a standard texture applied?
 
 # generate povray scene, write it to file, render file
 # write png to local file
 def renderScene(scene, displaySize):
     sceneTemplate = """
-    #include "colors.inc"    
+    #include "colors.inc"
+    #include "textures.inc"
 
 background { color rgb BGCOLOR }
 
@@ -68,13 +82,32 @@ box {
 
     sceneContent = sceneContent.replace("OBJS", objsText)
 
+    # append objects
+    for iObj in scene.objs:
+        povType = None
+        povPos = None
+
+        if iObj.type_ == "s": # is sphere?
+            povType = "sphere"
+            povPos = f'<{iObj.center[0]},{iObj.center[1]},{iObj.center[2]}>, {iObj.extend}'
+        elif iObj.type_ == "b": # is box?
+            povType = "box"
+            povPos = f"<{iObj.center[0]-iObj.extend[0]/2.0},{iObj.center[1]-iObj.extend[1]/2.0},{iObj.center[2]-iObj.extend[2]/2.0}>, <{iObj.center[0]+iObj.extend[0]/2.0},{iObj.center[1]+iObj.extend[1]/2.0},{iObj.center[2]+iObj.extend[2]/2.0}>"
+        else:
+            raise Exception(f'Invalid type "{iObj.type_}"')
+        
+        
+
+        povTexture = "texture { pigment { color Yellow } }"
+        if iObj.isTextured:
+            povTexture = "texture { Blue_Sky2 }" # UNTESTED
+
+        sceneContent += f'{povType} {{ {povPos} {povTexture} }}  \n'
+
 
     f = open("TEMPScene.pov", 'w')
     f.write(sceneContent)
     f.close()
-
-    #import os
-    #os.system("povray TEMPScene.pov"+" +W"+str(displaySize[0])+" +H"+str(displaySize[1]))
 
     import subprocess
     subprocess.call(["povray", "TEMPScene.pov", "+W"+str(displaySize[0]), "+H"+str(displaySize[1])], stderr=subprocess.PIPE)
