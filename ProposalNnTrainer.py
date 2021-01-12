@@ -211,8 +211,6 @@ def main():
 
             imgBeforeGray = renderSceneAndReturnImageGray64(scene, f'trainMotion{idx}A.png')
 
-            raise HERE()
-
             flow = cv2.calcOpticalFlowFarneback(imgBeforeGray,imgCurrentGray, None, 0.5, 3, 15, 3, 5, 1.2, 0)
             flowArr = flow.flatten() # convert image array to flat array
             
