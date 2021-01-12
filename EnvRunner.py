@@ -26,6 +26,7 @@ def main():
     t = 0.0 # time
 
     scene = Scene() # create scene
+    scene.objs.append(Obj("s", [0.0, 0.0, -2.8], 0.03)) # default sphere
 
 
     pygame.init()
@@ -47,6 +48,7 @@ def main():
         scene.cameraPos = [0.0, 0.2, -3.0]
         scene.lookAt = [0.0, 0.2-1.0, -3.0+1.0]
 
+        scene.objs[0].center = [math.cos(t)*0.02, math.sin(t)*0.02, -2.8]
 
         # jiggle around light so that stimulus isn't exactly equal
         scene.lightPos = [0.0+((t*0.1) % 2.0) + math.cos(t*50.0)*110.0, 2.0, -3.0]

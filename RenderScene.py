@@ -9,12 +9,7 @@ class Scene(object):
         
         self.objs = [] # objects in the scene, class Obj
 
-        self.boxCenters = [[-0.1, 0.0, -2.8]] # legacy
-        self.spheres = [([0.0, 0.0, -2.8], 0.03)] # legacy
-
-        self.enBox = True # legacy
-
-
+        self.spheres = [] # legacy
 
 class Obj(object):
     # /param type_ name of type of object, "s" for sphere, "b" for box
@@ -64,21 +59,10 @@ sphere {
   }
 }""".replace("POSS", spherePosAsStr) # replace position with src-code of position
 
-    for iBoxCenter in scene.boxCenters:
-        boxextend = [0.08, 0.08, 0.08]
 
-        # positions of edges of box as string
-        edgePointsAsStr = f"<{iBoxCenter[0]-boxextend[0]/2.0},{iBoxCenter[1]-boxextend[1]/2.0},{iBoxCenter[2]-boxextend[2]/2.0}>, <{iBoxCenter[0]+boxextend[0]/2.0},{iBoxCenter[1]+boxextend[1]/2.0},{iBoxCenter[2]+boxextend[2]/2.0}>"
-        
-        objsText += """
-box {
-  POSS
-  texture {
-    pigment { color Yellow }
-  }
-}
-""".replace("POSS", edgePointsAsStr) # replace position with src-code of position
-
+    #default boxcenter = [-0.1, 0.0, -2.8] 
+    #default boxextend = [0.08, 0.08, 0.08]
+    
 
     sceneContent = sceneContent.replace("OBJS", objsText)
 
