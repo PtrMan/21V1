@@ -14,6 +14,9 @@ from RenderScene import *
 from Net import *
 
 
+from RoboMisc import * # spongebot specific helpers
+
+
 # render the scene and return grayscale image with size of 64x64
 # /param copyImageDest name of image where the scene should be stored to, only for (visual) debugging
 def renderSceneAndReturnImageGray64(scene, copyImageDest = None):
@@ -57,78 +60,96 @@ def main():
 
         diffvecs = []
         diffvecs.append([0.0,0.0,0.0]) # no motion
-        for iMagX in [0.0, 0.02, 0.05, 0.1, 0.2, 0.33]: # iterate over magnitude of motion
-            #diffvecs.append([0.0,0.0,iMagX])
-            #diffvecs.append([0.0,0.0,-iMagX])
-            diffvecs.append([0.0,iMagX,0.0])
-            diffvecs.append([0.0,-iMagX,0.0])
-            diffvecs.append([iMagX,0.0,0.0])
-            diffvecs.append([-iMagX,0.0,0.0])
+        for iMagX in [0.0, 0.02, 0.05, 0.1]: # iterate over magnitude of motion
+            diffvecs.append([0.0,0.0,iMagX]) # side
+            diffvecs.append([0.0,0.0,-iMagX]) # side
+        #    diffvecs.append([0.0,iMagX,0.0])
+        #    diffvecs.append([0.0,-iMagX,0.0])
+            diffvecs.append([iMagX,0.0,0.0]) # forward
+            diffvecs.append([-iMagX,0.0,0.0]) # backward
+        
+        cameraRotDiffs = []
+        cameraRotDiffs.append(0.0)
+        cameraRotDiffs.append(0.05)
+        cameraRotDiffs.append(-0.05)
+        cameraRotDiffs.append(0.1)
+        cameraRotDiffs.append(-0.1)
+        cameraRotDiffs.append(0.2)
+        cameraRotDiffs.append(-0.2)
 
 
-        #for i in range(8):
-        #    x =random.uniform(-1.0, 1.0)
-        #    y =random.uniform(-1.0, 1.0)
-        #    z =random.uniform(-1.0, 1.0)
+        for i in range(8):
+            x =random.uniform(-1.0, 1.0)
+            y =random.uniform(-1.0, 1.0)
+            z =random.uniform(-1.0, 1.0)
 
-        #    diffvecs.append([x*0.02,y*0.02,z*0.02])
-        #    diffvecs.append([x*0.06,y*0.06,z*0.06])
+            diffvecs.append([x*0.02,0.0,z*0.02])
+            diffvecs.append([x*0.06,0.0,z*0.06])
 
-        idx = -1
-        for iDiffvec in diffvecs:
-            idx+=1
+        iid = -1
+        for iCamRotDiff in cameraRotDiffs:
+            for iDiffvec in diffvecs:
+                iid+=1
 
-            isAnyMotion = math.sqrt(iDiffvec[0]*iDiffvec[0]+ iDiffvec[1]*iDiffvec[1]+ iDiffvec[2]*iDiffvec[2]) > 0.001
+                isAnyMotion = False #parallax motion doesn't indicate objects!
 
-            iSceneDescriptionOutArr = [0.1,0.9] # no motion -> no proposal
-            if isAnyMotion:
-                iSceneDescriptionOutArr = [0.9,0.1]
+                iSceneDescriptionOutArr = [0.1,0.9] # no motion -> no proposal
+                if isAnyMotion:
+                    iSceneDescriptionOutArr = [0.9,0.1]
 
 
-            lightBefore = [0.0, 0.0, -3.0]
-            lightAfter = [0.0, 0.0, -3.0]
+                lightBefore = [0.0, 0.0, -3.0]
+                lightAfter = [0.0, 0.0, -3.0]
 
-            scene = Scene()
-            scene.backgroundColor = [0.0, 1.0, 0.0] # green for better visualization
-            scene.cameraPos = [0.0, 0.2, -3.0]
-            scene.lookAt = [0.0, 0.2-1.0, -3.0+1.0]
+                camDir = spongebotCalcCameraDirByAngle(0.0) # compute direction of camera
 
-            scene.boxCenters = [] # legacy
-            scene.spheres = [] # legacy
-            scene.enBox = False # legacy
+                scene = Scene()
+                scene.backgroundColor = [0.0, 1.0, 0.0] # green for better visualization
+                scene.cameraPos = [0.0, 0.2, -3.0]            
+                scene.lookAt = vecAdd(scene.cameraPos,camDir)
 
-            scene.lightPos = lightBefore
+                scene.boxCenters = [] # legacy
+                scene.spheres = [] # legacy
+                scene.enBox = False # legacy
 
-            # add floor to scene
-            obj = Obj("b", [0.0, 0.2-1.0, -3.0+1.0], [50.0, 0.01, 50.0])
-            obj.isTextured = True # 
-            scene.objs.append(obj)
-            del obj
+                scene.lightPos = lightBefore
 
-            # render and read training images
-            imgCurrentGray = renderSceneAndReturnImageGray64(scene, f'trainParallaxPerspectiveA{idx}B.png')
+                # add floor to scene
+                obj = Obj("b", [0.0, 0.0, 0.0], [50.0, 0.01, 50.0])
+                obj.isTextured = True # 
+                scene.objs.append(obj)
+                del obj
 
-            # move camera to get movement vector
-            scene.cameraPos[0] -= iDiffvec[0]
-            scene.cameraPos[1] -= iDiffvec[1]
-            scene.cameraPos[2] -= iDiffvec[2]
+                # render and read training images
+                imgCurrentGray = renderSceneAndReturnImageGray64(scene, f'trainParallaxPerspectiveA{iid}B.png')
 
-            imgBeforeGray = renderSceneAndReturnImageGray64(scene, f'trainParallaxPerspectiveA{idx}A.png')
+                
+                camDir = spongebotCalcCameraDirByAngle(0.0-iCamRotDiff) # compute direction of camera
 
-            flow = cv2.calcOpticalFlowFarneback(imgBeforeGray,imgCurrentGray, None, 0.5, 3, 15, 3, 5, 1.2, 0)
-            flowArr = flow.flatten() # convert image array to flat array
-            
-            inputArr = flowArr[:].tolist()
+                # move camera
+                scene.cameraPos[0] -= iDiffvec[0]
+                scene.cameraPos[1] -= iDiffvec[1]
+                scene.cameraPos[2] -= iDiffvec[2]
 
-            # [0] is object in center?
-            # [1] was no object detected?
-            expectedOut = iSceneDescriptionOutArr # expected output array
+                scene.lookAt = vecAdd(scene.cameraPos,camDir)
 
-            # add to training set
-            inputAndTarget.append((torch.tensor(inputArr), torch.tensor(expectedOut), "parallaxPerspectiveA")) # add to trainingset
-            del inputArr
-            del expectedOut
-            del iSceneDescriptionOutArr
+
+                imgBeforeGray = renderSceneAndReturnImageGray64(scene, f'trainParallaxPerspectiveA{iid}A.png')
+
+                flow = cv2.calcOpticalFlowFarneback(imgBeforeGray,imgCurrentGray, None, 0.5, 3, 15, 3, 5, 1.2, 0)
+                flowArr = flow.flatten() # convert image array to flat array
+                
+                inputArr = flowArr[:].tolist()
+
+                # [0] is object in center?
+                # [1] was no object detected?
+                expectedOut = iSceneDescriptionOutArr # expected output array
+
+                # add to training set
+                inputAndTarget.append((torch.tensor(inputArr), torch.tensor(expectedOut), "parallaxPerspectiveA")) # add to trainingset
+                del inputArr
+                del expectedOut
+                del iSceneDescriptionOutArr
 
 
 
