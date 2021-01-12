@@ -115,19 +115,19 @@ def main():
         # * prepare
         objectProposals = [] # all object proposals by motion
 
-        proposalSize = 128# imagesize used for proposal generator
+        proposalSize = int(128*1.5)# imagesize used for proposal generator
 
         height, width = flow.shape[:2]
-        nX = int(width / (proposalSize/2)) # count of x iterations
-        nY = int(height / (proposalSize/2)) # count of y iterations
+        nX = int(width / (proposalSize/3/2)) # count of x iterations
+        nY = int(height / (proposalSize/3/2)) # count of y iterations
         # * actual computation
         for ix in range(nX):
             for iy in range(nY):
                 
 
                 # calc center position
-                cx = int(proposalSize/2 + proposalSize/2 * ix)
-                cy = int(proposalSize/2 + proposalSize/2 * iy)
+                cx = int(proposalSize/2 + proposalSize/3/2 * ix)
+                cy = int(proposalSize/2 + proposalSize/3/2 * iy)
 
                 # crop motion image
                 croppedMotionImg = flow[cy-int(proposalSize/2):cy+int(proposalSize/2), cx-int(proposalSize/2):cx+int(proposalSize/2)] # idx with [y:y+h, x:x+w]
@@ -156,7 +156,10 @@ def main():
                         pass
                     elif maxSelIdx == 0: # was selection criterion [0] chosen?
                         # add to proposals because this was selected as a proposal
-                        objectProposals.append(ObjectProposal(cx,cy,proposalSize))
+                        objectProposals.append(ObjectProposal(cx,cy,int(proposalSize/3))) # proposal is only in the center, that's why it's 1.0/3.0
+                
+                # for debugging grid where proposals are sampled
+                #objectProposals.append(ObjectProposal(cx,cy,int(proposalSize/3))) # proposal is only in the center, that's why it's 1.0/3.0
                 
 
         # commented because it doesn't work
