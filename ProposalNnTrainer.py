@@ -55,6 +55,76 @@ def main():
 
 
 
+    if True:# training to ignore changing lighting conditions
+        sceneConfigs = []
+
+        random.seed(42+7)
+
+        diffvecs = []
+        for i in range(5):
+            diffvecs.append([random.uniform(-1.0, 1.0),random.uniform(-1.0, 1.0),random.uniform(-1.0, 1.0)])
+        
+        # differences from the original position
+        posdiffs = []
+        for i in range(9):
+            posdiffs.append([random.uniform(-1.0, 1.0)*0.18,random.uniform(-1.0, 1.0)*0.18,random.uniform(-1.0, 1.0)*0.18])
+        
+        for iPosDiff in posdiffs: # iterate over variation of position
+            for iDiffvec in diffvecs: # iterate over difference vectors for light positions
+                # for box
+                sceneConfigs.append({"boxesA":[vecAdd([-0.0, 0.0, -2.8],iPosDiff)], "spheresA":[],  "cameraPosA":[0.0, 0.2, -3.0],"lookAtA":[0.0, 0.2-1.0, -3.0+1.0], "cameraPosB":[0.0, 0.2, -3.0], "sceneDescriptionOutArr":[0.1, 0.9], "lightA":[0.0, 1.0, -3.0], "lightB":vecAdd([0.0, 1.0, -3.0], iDiffvec)})# moving light 
+                sceneConfigs.append({"boxesA":[vecAdd([-0.0, 0.0, -2.8],iPosDiff)], "spheresA":[],  "cameraPosA":[0.0, 0.2, -3.0],"lookAtA":[0.0, 0.2-1.0, -3.0+1.0], "cameraPosB":[0.0, 0.2, -3.0], "sceneDescriptionOutArr":[0.1, 0.9], "lightA":[0.0, 0.0, -3.0], "lightB":vecAdd([0.0, 0.0, -3.0], iDiffvec)})# moving light 
+
+                # for sphere
+                for iSphereR in [0.02, 0.03, 0.04, 0.055]: # vary sphere radius
+                    sceneConfigs.append({"boxesA":[], "spheresA":[(vecAdd([-0.0, 0.0, -2.8],iPosDiff), iSphereR)],  "cameraPosA":[0.0, 0.2, -3.0],"lookAtA":[0.0, 0.2-1.0, -3.0+1.0], "cameraPosB":[0.0, 0.2, -3.0], "sceneDescriptionOutArr":[0.1, 0.9], "lightA":[0.0, 1.0, -3.0], "lightB":vecAdd([0.0, 1.0, -3.0], iDiffvec)})# moving light 
+                    sceneConfigs.append({"boxesA":[], "spheresA":[(vecAdd([-0.0, 0.0, -2.8],iPosDiff), iSphereR)],  "cameraPosA":[0.0, 0.2, -3.0],"lookAtA":[0.0, 0.2-1.0, -3.0+1.0], "cameraPosB":[0.0, 0.2, -3.0], "sceneDescriptionOutArr":[0.1, 0.9], "lightA":[0.0, 0.0, -3.0], "lightB":vecAdd([0.0, 0.0, -3.0], iDiffvec)})# moving light 
+
+
+
+        idx = -1
+        for iSceneConfig in sceneConfigs:
+            iSceneDescriptionOutArr = [0.1,0.9] # no motion -> no proposal
+            
+            idx+=1
+
+            scene = Scene()
+            scene.backgroundColor = [0.0, 1.0, 0.0] # green for better visualization
+            scene.cameraPos = iSceneConfig["cameraPosA"]
+            scene.lookAt = iSceneConfig["lookAtA"]
+
+            for iBoxCenter in iSceneConfig["boxesA"]:
+                scene.objs.append(Obj("b", iBoxCenter, [0.08, 0.08, 0.08]))
+            for iSpherePos, iSphereR in iSceneConfig["spheresA"]:
+                scene.objs.append(Obj("s", iSpherePos, iSphereR))
+
+            scene.lightPos = iSceneConfig["lightA"]
+
+            # render and read training images
+            imgBeforeGray = renderSceneAndReturnImageGray64(scene, f'trainLighting{idx}A.png')
+
+            # move camera to get movement vector
+            scene.cameraPos = iSceneConfig["cameraPosB"]
+
+            scene.lightPos = iSceneConfig["lightB"]
+
+            imgCurrentGray = renderSceneAndReturnImageGray64(scene, f'trainLighting{idx}B.png')
+
+            flow = cv2.calcOpticalFlowFarneback(imgBeforeGray,imgCurrentGray, None, 0.5, 3, 15, 3, 5, 1.2, 0)
+            flowArr = flow.flatten() # convert image array to flat array
+            
+            inputArr = flowArr[:].tolist()
+
+            # [0] is object in center?
+            # [1] was no object detected?
+            expectedOut = iSceneDescriptionOutArr # expected output array
+
+            # add to training set
+            inputAndTarget.append((torch.tensor(inputArr), torch.tensor(expectedOut), "ignoreLightA")) # add to trainingset
+            del inputArr
+            del expectedOut
+
+
 
     if True:# training to ignore motion of object which is not in center
         sceneConfigs = []
@@ -300,76 +370,6 @@ def main():
             del iSceneDescriptionOutArr
 
 
-
-
-    if True:# training to ignore changing lighting conditions
-        sceneConfigs = []
-
-        random.seed(42+7)
-
-        diffvecs = []
-        for i in range(5):
-            diffvecs.append([random.uniform(-1.0, 1.0),random.uniform(-1.0, 1.0),random.uniform(-1.0, 1.0)])
-        
-        # differences from the original position
-        posdiffs = []
-        for i in range(9):
-            posdiffs.append([random.uniform(-1.0, 1.0)*0.18,random.uniform(-1.0, 1.0)*0.18,random.uniform(-1.0, 1.0)*0.18])
-        
-        for iPosDiff in posdiffs: # iterate over variation of position
-            for iDiffvec in diffvecs: # iterate over difference vectors for light positions
-                # for box
-                sceneConfigs.append({"boxesA":[vecAdd([-0.0, 0.0, -2.8],iPosDiff)], "spheresA":[],  "cameraPosA":[0.0, 0.2, -3.0],"lookAtA":[0.0, 0.2-1.0, -3.0+1.0], "cameraPosB":[0.0, 0.2, -3.0], "sceneDescriptionOutArr":[0.1, 0.9], "lightA":[0.0, 1.0, -3.0], "lightB":vecAdd([0.0, 1.0, -3.0], iDiffvec)})# moving light 
-                sceneConfigs.append({"boxesA":[vecAdd([-0.0, 0.0, -2.8],iPosDiff)], "spheresA":[],  "cameraPosA":[0.0, 0.2, -3.0],"lookAtA":[0.0, 0.2-1.0, -3.0+1.0], "cameraPosB":[0.0, 0.2, -3.0], "sceneDescriptionOutArr":[0.1, 0.9], "lightA":[0.0, 0.0, -3.0], "lightB":vecAdd([0.0, 0.0, -3.0], iDiffvec)})# moving light 
-
-                # for sphere
-                for iSphereR in [0.02, 0.03, 0.04, 0.055]: # vary sphere radius
-                    sceneConfigs.append({"boxesA":[], "spheresA":[(vecAdd([-0.0, 0.0, -2.8],iPosDiff), iSphereR)],  "cameraPosA":[0.0, 0.2, -3.0],"lookAtA":[0.0, 0.2-1.0, -3.0+1.0], "cameraPosB":[0.0, 0.2, -3.0], "sceneDescriptionOutArr":[0.1, 0.9], "lightA":[0.0, 1.0, -3.0], "lightB":vecAdd([0.0, 1.0, -3.0], iDiffvec)})# moving light 
-                    sceneConfigs.append({"boxesA":[], "spheresA":[(vecAdd([-0.0, 0.0, -2.8],iPosDiff), iSphereR)],  "cameraPosA":[0.0, 0.2, -3.0],"lookAtA":[0.0, 0.2-1.0, -3.0+1.0], "cameraPosB":[0.0, 0.2, -3.0], "sceneDescriptionOutArr":[0.1, 0.9], "lightA":[0.0, 0.0, -3.0], "lightB":vecAdd([0.0, 0.0, -3.0], iDiffvec)})# moving light 
-
-
-
-        idx = -1
-        for iSceneConfig in sceneConfigs:
-            iSceneDescriptionOutArr = [0.1,0.9] # no motion -> no proposal
-            
-            idx+=1
-
-            scene = Scene()
-            scene.backgroundColor = [0.0, 1.0, 0.0] # green for better visualization
-            scene.cameraPos = iSceneConfig["cameraPosA"]
-            scene.lookAt = iSceneConfig["lookAtA"]
-
-            for iBoxCenter in iSceneConfig["boxesA"]:
-                scene.objs.append(Obj("b", iBoxCenter, [0.08, 0.08, 0.08]))
-            for iSpherePos in iSceneConfig["spheresA"]:
-                scene.objs.append(Obj("s", iSpherePos, 0.03))
-
-            scene.lightPos = iSceneConfig["lightA"]
-
-            # render and read training images
-            imgBeforeGray = renderSceneAndReturnImageGray64(scene, f'trainLighting{idx}A.png')
-
-            # move camera to get movement vector
-            scene.cameraPos = iSceneConfig["cameraPosB"]
-
-            scene.lightPos = iSceneConfig["lightB"]
-
-            imgCurrentGray = renderSceneAndReturnImageGray64(scene, f'trainLighting{idx}B.png')
-
-            flow = cv2.calcOpticalFlowFarneback(imgBeforeGray,imgCurrentGray, None, 0.5, 3, 15, 3, 5, 1.2, 0)
-            flowArr = flow.flatten() # convert image array to flat array
-            
-            inputArr = flowArr[:].tolist()
-
-            # [0] is object in center?
-            # [1] was no object detected?
-            expectedOut = iSceneDescriptionOutArr # expected output array
-
-            # add to training set
-            inputAndTarget.append((torch.tensor(inputArr), torch.tensor(expectedOut), "ignoreLightA")) # add to trainingset
-            del inputArr
-            del expectedOut
 
 
 
