@@ -40,6 +40,25 @@ import math
 def vecAdd(a,b):
     return [a[0]+b[0],a[1]+b[1],a[2]+b[2]]
 
+# TODO< move to NetUtil.py >
+# returns the classification or None if no classification could be determined
+def calcClass(arr):
+    sel0 = arr[0] > 0.0
+    sel1 = arr[1] > 0.0
+    if sel0 and sel1: # is selection valid? if not then we just ignore the result!
+        n = 2
+        maxSelVal = float("-inf")
+        maxSelIdx = None
+        for iIdx in range(n):
+            if arr[iIdx] > maxSelVal:
+                maxSelIdx = iIdx
+                maxSelVal = arr[iIdx]
+        
+        return maxSelIdx
+    else:
+        return None # no classification was possible
+
+
 def main():
     ###########################
     ### build trainingset
@@ -55,7 +74,7 @@ def main():
 
 
 
-    if True:# training to ignore changing lighting conditions
+    if False:# training to ignore changing lighting conditions
         sceneConfigs = []
 
         random.seed(42+7)
@@ -132,6 +151,27 @@ def main():
         random.seed(42+7)
 
         diffvecs = []
+        for i in range(10):
+            diffvecs.append([random.uniform(-1.0, 1.0)*0.07,random.uniform(-1.0, 1.0)*0.07,random.uniform(-1.0, 1.0)*0.07])
+        
+        # differences from the center
+        centerdiffs = []
+        for i in range(14*2):
+            centerdiffs.append([random.uniform(-1.0, 1.0)*0.22,random.uniform(-1.0, 1.0)*0.22,random.uniform(-1.0, 1.0)*0.22])
+        
+        for iCenterDiff in centerdiffs: # iterate over variation of position
+            for iDiffvec in diffvecs: # iterate over difference vectors for light positions
+                # for box
+                #sceneConfigs.append({"boxesA":[vecAdd([-0.0, 0.0, -2.8],iPosDiff)], "spheresA":[],  "cameraPosA":[0.0, 0.2, -3.0],"lookAtA":[0.0, 0.2-1.0, -3.0+1.0], "cameraPosB":[0.0, 0.2, -3.0], "sceneDescriptionOutArr":[0.1, 0.9], "lightA":[0.0, 1.0, -3.0], "lightB":vecAdd([0.0, 1.0, -3.0], iDiffvec)})# moving light 
+                #sceneConfigs.append({"boxesA":[vecAdd([-0.0, 0.0, -2.8],iPosDiff)], "spheresA":[],  "cameraPosA":[0.0, 0.2, -3.0],"lookAtA":[0.0, 0.2-1.0, -3.0+1.0], "cameraPosB":[0.0, 0.2, -3.0], "sceneDescriptionOutArr":[0.1, 0.9], "lightA":[0.0, 0.0, -3.0], "lightB":vecAdd([0.0, 0.0, -3.0], iDiffvec)})# moving light 
+
+                # for sphere
+                for iSphereR in [0.02, 0.04, 0.06, 0.09]: # vary sphere radius
+                    sceneConfigs.append({"boxesA":[], "spheresA":[(vecAdd([-0.0, 0.0, -2.8],iCenterDiff), iSphereR)],  "cameraPosA":[0.0, 0.2, -3.0],"lookAtA":[0.0, 0.2-1.0, -3.0+1.0], "cameraPosB":vecAdd([0.0, 0.2, -3.0],iDiffvec), "sceneDescriptionOutArr":[0.1, 0.9], "lightA":[0.0, 1.0, -3.0], "lightB":[0.0, 1.0, -3.0]})# moving light 
+
+        #######
+        # testset
+        diffvecs = []
         for i in range(5):
             diffvecs.append([random.uniform(-1.0, 1.0)*0.07,random.uniform(-1.0, 1.0)*0.07,random.uniform(-1.0, 1.0)*0.07])
         
@@ -147,8 +187,8 @@ def main():
                 #sceneConfigs.append({"boxesA":[vecAdd([-0.0, 0.0, -2.8],iPosDiff)], "spheresA":[],  "cameraPosA":[0.0, 0.2, -3.0],"lookAtA":[0.0, 0.2-1.0, -3.0+1.0], "cameraPosB":[0.0, 0.2, -3.0], "sceneDescriptionOutArr":[0.1, 0.9], "lightA":[0.0, 0.0, -3.0], "lightB":vecAdd([0.0, 0.0, -3.0], iDiffvec)})# moving light 
 
                 # for sphere
-                for iSphereR in [0.02, 0.04, 0.06, 0.09]: # vary sphere radius
-                    sceneConfigs.append({"boxesA":[], "spheresA":[(vecAdd([-0.0, 0.0, -2.8],iCenterDiff), iSphereR)],  "cameraPosA":[0.0, 0.2, -3.0],"lookAtA":[0.0, 0.2-1.0, -3.0+1.0], "cameraPosB":vecAdd([0.0, 0.2, -3.0],iDiffvec), "sceneDescriptionOutArr":[0.1, 0.9], "lightA":[0.0, 1.0, -3.0], "lightB":[0.0, 1.0, -3.0]})# moving light 
+                for iSphereR in [0.09]: # vary sphere radius
+                    sceneConfigs.append({"boxesA":[], "spheresA":[(vecAdd([-0.0, 0.0, -2.8],iCenterDiff), iSphereR)],  "cameraPosA":[0.0, 0.2, -3.0],"lookAtA":[0.0, 0.2-1.0, -3.0+1.0], "cameraPosB":vecAdd([0.0, 0.2, -3.0],iDiffvec), "sceneDescriptionOutArr":[0.1, 0.9], "lightA":[0.0, 1.0, -3.0], "lightB":[0.0, 1.0, -3.0], "testset":True})# moving light 
 
 
 
@@ -188,8 +228,11 @@ def main():
             # [1] was no object detected?
             expectedOut = iSceneDescriptionOutArr # expected output array
 
-            # add to training set
-            inputAndTarget.append((torch.tensor(inputArr), torch.tensor(expectedOut), "ignoreLightA")) # add to trainingset
+            if "testset" in iSceneConfig:
+                inputAndTargetTest.append((torch.tensor(inputArr), torch.tensor(expectedOut), "ignoreLightA")) # add to testset
+            else:
+                inputAndTarget.append((torch.tensor(inputArr), torch.tensor(expectedOut), "ignoreLightA")) # add to trainingset
+            
             del inputArr
             del expectedOut
 
@@ -197,7 +240,7 @@ def main():
 
 
 
-    if True:# training to ignore perspective parallax (for now for SpongeBot setting)
+    if False:# training to ignore perspective parallax (for now for SpongeBot setting)
 
         random.seed(42+8)
 
@@ -447,6 +490,24 @@ def main():
             torch.save(net, "proposalGen.pytorch-model") # save network
             print(f'H   (done)')
 
+        # run testset
+        if True: #codeblock
+            if itCnt % 50 == 0:
+                n = 0
+                np = 0 # positive
+
+                for iSampleInput, iSampleTarget, type_ in inputAndTargetTest:
+                    n+=1
+
+                    out = net(iSampleInput)
+
+                    classTestset = calcClass(iSampleTarget)
+                    classResult = calcClass(out)
+                    
+                    if classTestset == classResult: # is the classification correct?
+                        np+=1
+                
+                print(f'H testset n={n} np={np} ratio={float(np)/float(n)}')
 
 
 
