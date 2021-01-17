@@ -151,7 +151,7 @@ def main():
         random.seed(42+7)
 
         diffvecs = []
-        for i in range(10):
+        for i in range(35):
             diffvecs.append([random.uniform(-1.0, 1.0)*0.07,random.uniform(-1.0, 1.0)*0.07,random.uniform(-1.0, 1.0)*0.07])
         
         # differences from the center
