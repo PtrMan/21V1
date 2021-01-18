@@ -5,7 +5,7 @@ import torch.nn as nn
 class Net(nn.Module):
     def __init__(self, nInput, nOutput):
         super(Net, self).__init__()
-        nHidden = 38 #25 # number of hidden neurons
+        nHidden = 50#38 #25 # number of hidden neurons
         self.fca1 = nn.Linear(nInput, nHidden)
         self.a = nn.ReLU()
         self.fca2 = nn.Linear(nHidden, nOutput)

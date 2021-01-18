@@ -156,7 +156,7 @@ def main():
         
         # differences from the center
         centerdiffs = []
-        for i in range(14*2):
+        for i in range(14*2*2):
             centerdiffs.append([random.uniform(-1.0, 1.0)*0.22,random.uniform(-1.0, 1.0)*0.22,random.uniform(-1.0, 1.0)*0.22])
         
         for iCenterDiff in centerdiffs: # iterate over variation of position
