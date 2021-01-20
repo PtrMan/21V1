@@ -24,4 +24,4 @@ conda is recommended for managing the python environment
 #models
 This system needs (pretrained) models. Good updated models will be linked here.
 
-TODO< add best model >
+[01/20/2021](https://drive.google.com/file/d/16fGJp-2tY2CO2GkRyGkie2tDQQXpAftS/view?usp=sharing) trained for all existing motions, reaches a testset accuracy of ~0.88<br/>
