@@ -74,7 +74,7 @@ def main():
 
 
 
-    if False:# training to ignore changing lighting conditions
+    if True:# training to ignore changing lighting conditions
         sceneConfigs = []
 
         random.seed(42+7)
@@ -240,7 +240,7 @@ def main():
 
 
 
-    if False:# training to ignore perspective parallax (for now for SpongeBot setting)
+    if True:# training to ignore perspective parallax (for now for SpongeBot setting)
 
         random.seed(42+8)
 
@@ -476,7 +476,8 @@ def main():
 
             # print loss
             if itCnt % 6 == 0:
-                print(f'L  {lossTensor.item()}')
+                print(f'H epoch = {itCnt/len(inputAndTarget)}')
+                print(f'L {lossTensor.item()}')
                 print(f'H loss avg = {lossAvg}')
                 print(f'H time = {time.time()-trainingStartT}')
             
