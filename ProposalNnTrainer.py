@@ -40,24 +40,7 @@ import math
 def vecAdd(a,b):
     return [a[0]+b[0],a[1]+b[1],a[2]+b[2]]
 
-# TODO< move to NetUtil.py >
-# returns the classification or None if no classification could be determined
-def calcClass(arr):
-    sel0 = arr[0] > 0.0
-    sel1 = arr[1] > 0.0
-    if sel0 and sel1: # is selection valid? if not then we just ignore the result!
-        n = 2
-        maxSelVal = float("-inf")
-        maxSelIdx = None
-        for iIdx in range(n):
-            if arr[iIdx] > maxSelVal:
-                maxSelIdx = iIdx
-                maxSelVal = arr[iIdx]
-        
-        return maxSelIdx
-    else:
-        return None # no classification was possible
-
+from NetUtils import * # functions for network
 
 def main():
     ###########################
